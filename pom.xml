@@ -8,10 +8,20 @@
 	<modules>
 		<module>NMSUtils-API</module>
 		<module>NMSUtils-v1_9_R1</module>
-		<module>NMSUtils-v1_9_R2</module>
-		<module>NMSUtils-v1_8_R3</module>
 		<module>NMSUtils-plugin</module>
-	</modules>
+        <module>SpigotMCRunner</module>
+    </modules>
+
+	<repositories>
+		<repository>
+			<id>dmulloy2-repo</id>
+			<url>http://repo.dmulloy2.net/content/groups/public/</url>
+		</repository>
+		<repository>
+			<url>https://maven.tangentmc.net/repository/tangent/</url>
+			<id>tangentmc</id>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>net.jodah</groupId>
@@ -28,7 +38,7 @@
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>3.6.5-SNAPSHOT</version>
+			<version>4.0.0-SNAPSHOT</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -41,12 +51,16 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>3.2.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<scope>provided</scope>
-			<version>1.8.8-R0.1-SNAPSHOT</version>
+			<version>1.9.2-R0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -62,4 +76,11 @@
 			</plugin>
 		</plugins>
 	</build>
+    <distributionManagement>
+        <repository>
+            <id>tangentmc</id>
+            <name>TangentMC Internal Repository</name>
+            <url>https://maven.tangentmc.net/repository/tangent/</url>
+        </repository>
+    </distributionManagement>
 </project>

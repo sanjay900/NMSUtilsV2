@@ -73,8 +73,8 @@ public class PacketListener extends PacketAdapter implements Listener{
 			boolean jump = packet.getBooleans().read(0);
 			boolean unmount = packet.getBooleans().read(1);
 			//avoid unmounting players when sneak is pressed
+			if (unmount) event.setCancelled(true);
 			pmEvent = new PlayerPushedKeyEvent(event.getPlayer(),forMot,sideMot,jump,unmount);
-			event.setCancelled(pmEvent.isCancelled());
 		}
 		if (pmEvent == null) return;
 		boolean isUnmount = event.isCancelled();

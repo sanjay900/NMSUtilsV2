@@ -228,6 +228,17 @@ public class LaserEntitiesGuardian {
 			public void g(double d0, double d1, double d2) {}
 
 		}
+
+		@Override
+		public void setCollides(boolean b) {
+
+		}
+
+		@Override
+		public void setSaves(boolean b) {
+
+		}
+
 		@Override
 		public void spawn() {
 			for (Entity en: ((LaserEntity)this.entity).getAllEntities()) {
@@ -241,7 +252,9 @@ public class LaserEntitiesGuardian {
 		public boolean willSave() {	return false; }
 
 		@Override
-		public void setWillSave(boolean b) {}
+		public boolean willCollide() {
+			return false;
+		}
 
 		@Override
 		public List<NMSLaser> getAllEntities() {
@@ -323,15 +336,27 @@ public class LaserEntitiesGuardian {
 		}
 
 		@Override
+		public void setCollides(boolean b) {
+
+		}
+
+		@Override
+		public void setSaves(boolean b) {
+
+		}
+
+		@Override
 		public void spawn() {
-			NMSUtilImpl.addEntityToWorld(((Entity)entity).world, ((Entity)entity));
+			NMSUtilImpl.addEntityToWorld(entity.world, entity);
 		}
 		//Lasers never save.
 		@Override
 		public boolean willSave() {	return false; }
 
 		@Override
-		public void setWillSave(boolean b) {}
+		public boolean willCollide() {
+			return false;
+		}
 		@Override
 		public List<NMSLaser> getAllEntities() {
 			return Arrays.stream(((LaserDestinationEntity)entity).getParent().getAllEntities()).filter(m->m != null).map(m->(NMSLaser)m.getBukkitEntity()).collect(Collectors.toList());
@@ -424,9 +449,20 @@ public class LaserEntitiesGuardian {
 				return new CraftLaserSourceEntity(this);
 			}
 		}
+
+		@Override
+		public void setCollides(boolean b) {
+
+		}
+
+		@Override
+		public void setSaves(boolean b) {
+
+		}
+
 		@Override
 		public void spawn() {
-			NMSUtilImpl.addEntityToWorld(((Entity)entity).world, ((Entity)entity));
+			NMSUtilImpl.addEntityToWorld(entity.world, entity);
 		}
 
 		//Lasers never save.
@@ -434,7 +470,9 @@ public class LaserEntitiesGuardian {
 		public boolean willSave() {	return false; }
 
 		@Override
-		public void setWillSave(boolean b) {}
+		public boolean willCollide() {
+			return false;
+		}
 
 		@Override
 		public List<NMSLaser> getAllEntities() {

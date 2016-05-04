@@ -57,7 +57,7 @@
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot</artifactId>
-      <version>1.9-SNAPSHOT</version>
+      <version>1.9.2-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -69,7 +69,7 @@
     <dependency>
       <groupId>com.comphenix.protocol</groupId>
       <artifactId>ProtocolLib</artifactId>
-      <version>3.6.5-SNAPSHOT</version>
+      <version>4.0.0-SNAPSHOT</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -79,6 +79,10 @@
         <exclusion>
           <artifactId>spigot-api</artifactId>
           <groupId>org.spigotmc</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>ProtocolLib-API</artifactId>
+          <groupId>com.comphenix.protocol</groupId>
         </exclusion>
         <exclusion>
           <artifactId>cglib-nodep</artifactId>
@@ -93,7 +97,7 @@
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.8.8-R0.1-SNAPSHOT</version>
+      <version>1.9.2-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>

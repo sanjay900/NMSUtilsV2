@@ -68,4 +68,8 @@ public class EventListener implements Listener {
 	public void worldUnload(WorldUnloadEvent evt) {
 		util.getUtil().untrackWorldEntities(evt.getWorld());
 	}
+	@EventHandler
+	public void collide(EntityCollideWithEntityEvent evt) {
+		System.out.print(evt);
+	}
 }

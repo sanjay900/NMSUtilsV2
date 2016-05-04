@@ -98,7 +98,7 @@ public class HologramFactory {
 		lines.add(new HologramObject(HologramType.TEXT, message));
 		return this;
 	}
-	public NMSHologram build() {
+	public NMSEntity build() {
 		if (this.loc == null) {
 			System.out.println("Unable to spawn holgoram without location!");
 			Thread.dumpStack();
@@ -109,7 +109,8 @@ public class HologramFactory {
 			Thread.dumpStack();
 			return null;
 		}
-		return NMSUtils.getInstance().getUtil().spawnHologram(loc, lines);
+		//NMSUtils.getInstance().getUtil().spawnHologram(loc, lines)
+		return null;
 	}
 	@Getter
 	@AllArgsConstructor

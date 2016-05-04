@@ -9,7 +9,6 @@ public interface NMSLaser extends NMSEntity{
 	default Location getDestination() {
 		return getDestinationPart()==null?null:((Entity)getDestinationPart()).getLocation();
 	}
-
 	default Location getSource() {
 		return getSourcePart()==null?null:((Entity)getSourcePart()).getLocation();
 	}

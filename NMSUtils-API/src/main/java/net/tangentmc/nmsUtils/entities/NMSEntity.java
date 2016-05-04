@@ -1,11 +1,15 @@
 package net.tangentmc.nmsUtils.entities;
 
 public interface NMSEntity {
-	void remove();
-	boolean isValid();
+    String SAVE_TAG = "saves";
+    String COLLIDE_TAG = "collides";
+    String FROZEN_TAG = "frozen";
 	void setFrozen(boolean b);
-	boolean isFrozen();
-	void setWillSave(boolean b);
-	boolean willSave();
-	void spawn();
+    void setCollides(boolean b);
+    void setSaves(boolean b);
+    void spawn();
+
+    boolean willSave();
+    boolean isFrozen();
+    boolean willCollide();
 }

@@ -61,7 +61,7 @@ import net.tangentmc.nmsUtils.v1_9_R1.entities.effects.Collideable;
  * @author DarkSeraphim.
  */
 @SuppressWarnings("rawtypes")
-public class NPC extends EntityPlayer implements Collideable{
+public class NPC extends EntityPlayer{
 	public static class CraftNPC extends CraftPlayer implements net.tangentmc.nmsUtils.entities.NPC{
 		public CraftNPC(NPC entity) {
 			super((CraftServer) Bukkit.getServer(), entity);
@@ -91,14 +91,26 @@ public class NPC extends EntityPlayer implements Collideable{
 		public void setFrozen(boolean b) {
 			
 		}
-		@Override
+
+        @Override
+        public void setCollides(boolean b) {
+
+        }
+
+        @Override
+        public void setSaves(boolean b) {
+
+        }
+
+        @Override
 		public boolean isFrozen() {
 			return false;
 		}
-		@Override
-		public void setWillSave(boolean b) {
-			//This wont ever, and cant save.
-		}
+
+        @Override
+        public boolean willCollide() {
+            return true;
+        }
 		@Override
 		public boolean willSave() {
 			return false;
@@ -295,7 +307,7 @@ public class NPC extends EntityPlayer implements Collideable{
     }
     @Override
     public void m() {
-    	this.testCollision();
+    	Collideable.testCollision(this);
     	super.m(); }
 
 }

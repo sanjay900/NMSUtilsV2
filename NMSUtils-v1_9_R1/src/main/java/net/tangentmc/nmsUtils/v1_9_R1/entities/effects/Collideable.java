@@ -1,36 +1,26 @@
 package net.tangentmc.nmsUtils.v1_9_R1.entities.effects;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-
-import net.minecraft.server.v1_9_R1.AxisAlignedBB;
-import net.minecraft.server.v1_9_R1.BlockPosition;
-import net.minecraft.server.v1_9_R1.Entity;
-import net.minecraft.server.v1_9_R1.EntityProjectile;
-import net.minecraft.server.v1_9_R1.MovingObjectPosition;
-import net.minecraft.server.v1_9_R1.Vec3D;
+import net.minecraft.server.v1_9_R1.*;
 import net.tangentmc.nmsUtils.events.EntityCollideWithBlockEvent;
 import net.tangentmc.nmsUtils.events.EntityCollideWithEntityEvent;
 import net.tangentmc.nmsUtils.events.EntityMoveEvent;
 import net.tangentmc.nmsUtils.utils.FaceUtil;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.CraftHologramEntity.CraftHologramPart.BlockHologramEntity;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.CraftHologramEntity.CraftHologramPart.BlockHologramEntity.HologramBlock;
+import org.bukkit.Bukkit;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
-public interface Collideable {
-	default void testMovement() {
-		Entity en = (Entity) this;
+import java.util.Arrays;
+import java.util.List;
+
+public class Collideable {
+	public static void testMovement(Entity en) {
 		org.bukkit.entity.Entity e = en.getBukkitEntity();
 		if (en.locX != en.lastX || en.locY != en.lastY || en.locZ != en.lastZ || en.pitch != en.lastPitch || en.yaw != en.lastYaw) {
 			EntityMoveEvent evt = new EntityMoveEvent(e, en.lastX, en.lastY, en.lastZ, en.locX, en.locY, en.locZ, en.pitch, en.lastPitch, en.yaw, en.lastYaw);
 			Bukkit.getPluginManager().callEvent(evt);
 		}
 	}
-	default void testCollision(Entity... ignore) {
-		Entity en = (Entity) this;
+	public static void testCollision(Entity en, Entity... ignore) {
 		org.bukkit.entity.Entity e = en.getBukkitEntity();
 		AxisAlignedBB bb = en.getBoundingBox();
 		if (en.getBukkitEntity().hasMetadata("sizeY")) {

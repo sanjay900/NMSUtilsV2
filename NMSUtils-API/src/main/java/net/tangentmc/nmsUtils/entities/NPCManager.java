@@ -1,5 +1,6 @@
 package net.tangentmc.nmsUtils.entities;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -9,12 +10,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.google.common.collect.Sets;
-
 import net.tangentmc.nmsUtils.NMSUtils;
 
 public class NPCManager implements Listener {
-	Set<NPC> npcs = Sets.newSetFromMap(new WeakHashMap<NPC,Boolean>());
+	private Set<NPC> npcs = Collections.newSetFromMap(new WeakHashMap<NPC,Boolean>());
 	public NPCManager() {
 		Bukkit.getPluginManager().registerEvents(this, NMSUtils.getInstance());
 	}

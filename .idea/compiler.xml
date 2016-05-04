@@ -24,9 +24,9 @@
         <processorPath useClasspath="true" />
         <module name="NMSUtils-API" />
         <module name="NMSUtils-plugin" />
-        <module name="NMSUtils-v1_8_R3" />
         <module name="NMSUtils-v1_9_R1" />
         <module name="NMSUtils-v1_9_R2" />
+        <module name="SpigotMCRunner" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -36,6 +36,7 @@
       <module name="NMSUtils-v1_8_R3" target="1.8" />
       <module name="NMSUtils-v1_9_R1" target="1.8" />
       <module name="NMSUtils-v1_9_R2" target="1.8" />
+      <module name="SpigotMCRunner" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>

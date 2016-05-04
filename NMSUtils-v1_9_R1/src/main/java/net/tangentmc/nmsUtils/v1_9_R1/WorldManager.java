@@ -6,24 +6,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.server.v1_9_R1.*;
+import net.sf.cglib.proxy.Proxy;
+import net.tangentmc.nmsUtils.NMSUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_9_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import lombok.SneakyThrows;
-import net.minecraft.server.v1_9_R1.BlockPosition;
-import net.minecraft.server.v1_9_R1.Entity;
-import net.minecraft.server.v1_9_R1.EntityHuman;
-import net.minecraft.server.v1_9_R1.EntityMinecartAbstract;
-import net.minecraft.server.v1_9_R1.EntityPlayer;
-import net.minecraft.server.v1_9_R1.IBlockData;
-import net.minecraft.server.v1_9_R1.IWorldAccess;
-import net.minecraft.server.v1_9_R1.NBTTagCompound;
-import net.minecraft.server.v1_9_R1.SoundCategory;
-import net.minecraft.server.v1_9_R1.SoundEffect;
-import net.minecraft.server.v1_9_R1.World;
-import net.minecraft.server.v1_9_R1.WorldServer;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.entities.NMSEntity;
 import net.tangentmc.nmsUtils.events.EntityDespawnEvent;
@@ -35,6 +27,7 @@ public class WorldManager implements IWorldAccess {
 	private static Field f;
 	private static Field f2;
 	WorldServer world;
+	NMSCraftWorld craftWorld;
 	@SuppressWarnings("unchecked")
 	@SneakyThrows
 	public WorldManager(org.bukkit.World world) {
@@ -43,6 +36,7 @@ public class WorldManager implements IWorldAccess {
 		//Entities will return based on the world handle, 
 		//while bukkit methods are based on the Bukkit.getServers() list of worlds
 		CraftWorld nmsWorld = new NMSCraftWorld((CraftWorld) world);
+		craftWorld = (NMSCraftWorld) nmsWorld;
 		ReflectionManager.setFinalStatic(f2, this.world, nmsWorld);
 		Map<String, org.bukkit.World> worlds = (Map<String, org.bukkit.World>) WorldManager.worlds.get(Bukkit.getServer());
 		worlds.put(world.getName(), nmsWorld);
@@ -75,7 +69,7 @@ public class WorldManager implements IWorldAccess {
 			if (added instanceof EntityPlayer && !this.players.add((EntityPlayer) added)) {
 				return;
 			}
-			if (!(added.getBukkitEntity() instanceof NMSEntity) && !(added instanceof EntityPlayer) && added.getClass().getName().contains("net.minecraft.server")) {
+			if (!(added.getBukkitEntity() instanceof NMSEntity) && !(added instanceof EntityPlayer) && !added.getBukkitEntity().hasMetadata("instrumented")) {
 				
 				new BukkitRunnable(){
 					@Override
@@ -95,7 +89,7 @@ public class WorldManager implements IWorldAccess {
 		Entity tnew = a(old);
 		if (tnew != null) {
 			tnew.ticksLived = tickslived;
-			NMSUtilImpl.addEntityToWorld((WorldServer) world, tnew);
+			NMSUtilImpl.addEntityToWorld(world, tnew);
 		}
 	}
 	public Entity a(NBTTagCompound nbttagcompound) {
@@ -105,11 +99,11 @@ public class WorldManager implements IWorldAccess {
 			nbttagcompound.setString("id", EntityMinecartAbstract.EnumMinecartType.values()[nbttagcompound.getInt("Type")].b());
 			nbttagcompound.remove("Type");
 		}
-
 		try {
-			Class<? extends Entity> oclass = NMSEntityTypes.getClassById(nbttagcompound.getString("id"));
-			if (oclass != null) {
-				entity = oclass.getConstructor(new Class[] { World.class}).newInstance(new Object[] { world});
+			Class<? extends Entity> oclass = EntityTypes.a(EntityTypes.a(nbttagcompound.getString("id")));
+            this.getClass().getClassLoader().loadClass("net.sf.cglib.proxy.Factory");
+            if (oclass != null) {
+				entity = craftWorld.instrument(oclass,world);
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace();
@@ -117,8 +111,9 @@ public class WorldManager implements IWorldAccess {
 
 		if (entity != null) {
 			entity.f(nbttagcompound);
+			entity.getBukkitEntity().setMetadata("instrumented",new FixedMetadataValue(NMSUtils.getInstance(),true));
 		} else {
-			Bukkit.getLogger().warning("Skipping Entity with id " + nbttagcompound.getString("id"));
+			Bukkit.getLogger().warning("Skipping Entiasdasdty with id " + nbttagcompound.getString("id"));
 		}
 
 		return entity;
