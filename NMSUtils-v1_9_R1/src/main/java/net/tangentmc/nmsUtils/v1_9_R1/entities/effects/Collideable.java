@@ -11,31 +11,22 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
+import org.mockito.stubbing.Answer;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Collideable {
 	static final String TICK_METHOD = "m";
-	public static MethodInterceptor callback = (obj, method, args, proxy) -> {
-		if(method.getDeclaringClass() != Object.class && method.getName().equals(TICK_METHOD)) {
-			Collideable.testCollision((net.minecraft.server.v1_9_R1.Entity)obj);
-			proxy.invokeSuper(obj, args);
-			Collideable.testMovement((net.minecraft.server.v1_9_R1.Entity)obj);
-			return null;
-		} else {
-			return proxy.invokeSuper(obj, args);
+	public static Answer<Void> callback = answer -> {
+		if(answer.getMethod().getDeclaringClass() != Object.class && answer.getMethod().getName().equals(TICK_METHOD)) {
+			testCollision((Entity)answer.getMock());
 		}
+        answer.callRealMethod();
+		return null;
 	};
-
-	public static void testMovement(Entity en) {
-		org.bukkit.entity.Entity e = en.getBukkitEntity();
-		if (en.locX != en.lastX || en.locY != en.lastY || en.locZ != en.lastZ || en.pitch != en.lastPitch || en.yaw != en.lastYaw) {
-			EntityMoveEvent evt = new EntityMoveEvent(e, en.lastX, en.lastY, en.lastZ, en.locX, en.locY, en.locZ, en.pitch, en.lastPitch, en.yaw, en.lastYaw);
-			Bukkit.getPluginManager().callEvent(evt);
-		}
-	}
     public static void testCollision(Entity en) {
         testCollision(en, new ArrayList<>());
     }

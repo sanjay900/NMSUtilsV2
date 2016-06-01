@@ -1,10 +1,14 @@
 package net.tangentmc.nmsUtils.events;
 
+import net.tangentmc.nmsUtils.entities.NMSEntity;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -23,14 +27,20 @@ public class EventListener implements Listener {
 	}
 	@EventHandler
 	public void playerMove(PlayerMoveEvent event) {
-		if (event.getFrom().distanceSquared(event.getTo())==0) return;
-		Player e = event.getPlayer();
-		Vector movement = event.getTo().toVector().subtract(event.getFrom().toVector());
+		entityMove(event.getPlayer(),event.getFrom(),event.getTo());
+	}
+	@EventHandler
+	public void entityMove(EntityMoveEvent event) {
+		entityMove(event.getEntity(),event.getFrom(),event.getTo());
+	}
+	private void entityMove(Entity e, Location from, Location to) {
+		if (from.distanceSquared(to)==0) return;
+		Vector movement = to.toVector().subtract(from.toVector());
 		Bukkit.getScheduler().runTask(util, ()-> {
-			Block b = event.getTo().getBlock().getRelative(FaceUtil.getDirection(movement));
+			Block b = to.getBlock().getRelative(FaceUtil.getDirection(movement));
 			if (FaceUtil.isSubCardinal(FaceUtil.getDirection(movement))) {
 				BlockFace[] sub = FaceUtil.getFaces(FaceUtil.getDirection(movement));
-				if (!event.getTo().getBlock().getRelative(sub[0]).getType().isSolid()&&!event.getTo().getBlock().getRelative(sub[1]).getType().isSolid()) {
+				if (!to.getBlock().getRelative(sub[0]).getType().isSolid()&&!to.getBlock().getRelative(sub[1]).getType().isSolid()) {
 					if (b.getType()!= Material.AIR) {
 						EntityCollideWithBlockEvent evt = new EntityCollideWithBlockEvent(e, b, movement,FaceUtil.getDirection(movement));
 						Bukkit.getPluginManager().callEvent(evt);
@@ -42,13 +52,13 @@ public class EventListener implements Listener {
 				Bukkit.getPluginManager().callEvent(evt);
 				return;
 			}
-			b = event.getTo().getBlock();
+			b = to.getBlock();
 			if (b.getType()!= Material.AIR) {
 				EntityCollideWithBlockEvent evt = new EntityCollideWithBlockEvent(e, b, movement,BlockFace.SELF);
 				Bukkit.getPluginManager().callEvent(evt);
 				return;
 			}
-			b = event.getTo().getBlock().getRelative(BlockFace.DOWN);
+			b = to.getBlock().getRelative(BlockFace.DOWN);
 			if (b.getType()!= Material.AIR) {
 				EntityCollideWithBlockEvent evt = new EntityCollideWithBlockEvent(e, b, movement.setY(-0.1), BlockFace.DOWN);
 				Bukkit.getPluginManager().callEvent(evt);
@@ -56,6 +66,7 @@ public class EventListener implements Listener {
 			}
 		});
 	}
+
 	@EventHandler
 	public void chunkLoad(ChunkLoadEvent evt) {
 		util.getUtil().loadChunk(evt.getChunk());

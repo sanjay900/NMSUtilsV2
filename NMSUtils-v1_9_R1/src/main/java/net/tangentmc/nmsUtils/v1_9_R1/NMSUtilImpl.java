@@ -1,5 +1,5 @@
 package net.tangentmc.nmsUtils.v1_9_R1;
-
+import static org.mockito.Mockito.*;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
@@ -13,6 +13,7 @@ import net.sf.cglib.proxy.Enhancer;
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.entities.*;
+import net.tangentmc.nmsUtils.events.EntityMoveEvent;
 import net.tangentmc.nmsUtils.jinglenote.JingleNoteManager;
 import net.tangentmc.nmsUtils.jinglenote.MidiJingleSequencer;
 import net.tangentmc.nmsUtils.utils.Validator;
@@ -37,6 +38,9 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.internal.util.MockUtil;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
@@ -48,7 +52,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 @Getter
-public class NMSUtilImpl implements NMSUtil, Listener {
+public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
     private HashSet<UUID> riding = new HashSet<>();
     JingleNoteManager manager = new JingleNoteManager();
     private static Table<Integer,Integer,List<NMSEntity>> customEntities = HashBasedTable.create();
@@ -62,6 +66,7 @@ public class NMSUtilImpl implements NMSUtil, Listener {
         npcmanager = new NPCManager();
         Bukkit.getPluginManager().registerEvents(this, NMSUtils.getInstance());
         Bukkit.getWorlds().forEach(this::trackWorldEntities);
+        Bukkit.getScheduler().runTaskTimer(NMSUtils.getInstance(),this,10L,1L);
     }
     WeakHashMap<UUID,WorldManager> managers = new WeakHashMap<>();
     @Override
@@ -387,16 +392,6 @@ public class NMSUtilImpl implements NMSUtil, Listener {
 
                 @Override
                 public void setCollides(boolean b) {
-                    net.minecraft.server.v1_9_R1.Entity en3 = ((CraftEntity)en).getHandle();
-                    if (!Enhancer.isEnhanced(en3.getClass())) {
-                        Enhancer enhancer = new Enhancer();
-                        enhancer.setSuperclass(en.getClass());
-                        //Load from bukkits class loader not the default one
-                        enhancer.setClassLoader(NMSCraftWorld.class.getClassLoader());
-                        enhancer.setCallback(Collideable.callback);
-                        en3 = (net.minecraft.server.v1_9_R1.Entity) enhancer.create(new Class[]{World.class},new Object[]{en3.getWorld()});
-
-                    }
                     if (b) {
                         en.setMetadata(NMSEntity.COLLIDE_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
                     } else {
@@ -457,6 +452,13 @@ public class NMSUtilImpl implements NMSUtil, Listener {
                 @Override
                 public void setCollides(boolean b) {
                     if (b) {
+                        if (!new MockUtil().isMock(((CraftEntity) en).getHandle())) {
+                            net.minecraft.server.v1_9_R1.Entity en3 = spy(((CraftEntity) en).getHandle());
+                            doAnswer(Collideable.callback).when(en3).m();
+                            en3.getWorld().removeEntity(((CraftEntity) en).getHandle());
+                            NMSUtilImpl.addEntityToWorld(en3.getWorld(), en3);
+                            en = en3.getBukkitEntity();
+                        }
                         en.setMetadata(NMSEntity.COLLIDE_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
                     } else {
                         if (en.hasMetadata(NMSEntity.COLLIDE_TAG))
@@ -507,5 +509,17 @@ public class NMSUtilImpl implements NMSUtil, Listener {
     public boolean isNMSEntity(Entity en) {
         net.minecraft.server.v1_9_R1.Entity added = ((CraftEntity)en).getHandle();
         return en.getType() != EntityType.PLAYER && !Enhancer.isEnhanced(added.getClass());
+    }
+
+    @Override
+    public void run() {
+        for (World w: Bukkit.getWorlds()) {
+            for (Entity en: w.getEntities()) {
+                net.minecraft.server.v1_9_R1.Entity added = ((CraftEntity)en).getHandle();
+                if (added.lastX != added.locX || added.lastY != added.locY || added.lastZ != added.locZ || added.lastPitch != added.pitch || added.lastYaw != added.yaw) {
+                    Bukkit.getPluginManager().callEvent(new EntityMoveEvent(en,added.lastX,added.lastY,added.lastZ,added.locX,added.locY,added.locZ,added.pitch,added.lastPitch,added.yaw,added.lastYaw));
+                }
+            }
+        }
     }
 }
