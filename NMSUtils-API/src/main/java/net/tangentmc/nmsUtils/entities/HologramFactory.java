@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import net.tangentmc.nmsUtils.NMSUtil;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
@@ -98,19 +99,16 @@ public class HologramFactory {
 		lines.add(new HologramObject(HologramType.TEXT, message));
 		return this;
 	}
-	public NMSEntity build() {
+	public NMSHologram build() {
 		if (this.loc == null) {
-			System.out.println("Unable to spawn holgoram without location!");
-			Thread.dumpStack();
+			System.out.println("Unable to spawn hologram without location!");
 			return null;
 		}
 		if (this.lines.isEmpty()) {
-			System.out.println("Unable to spawn holgoram without lines!");
-			Thread.dumpStack();
+			System.out.println("Unable to spawn hologram without lines!");
 			return null;
 		}
-		//NMSUtils.getInstance().getUtil().spawnHologram(loc, lines)
-		return null;
+		return NMSUtils.getInstance().getUtil().spawnHologram(loc, lines);
 	}
 	@Getter
 	@AllArgsConstructor

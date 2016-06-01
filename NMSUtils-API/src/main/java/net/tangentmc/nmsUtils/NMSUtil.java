@@ -22,7 +22,7 @@ public interface NMSUtil {
 	void untrackWorldEntities(World w);
 	void loadChunk(Chunk c);
 	NMSLaser spawnLaser(Location init);
-	//NMSHologram spawnHologram(Location loc, ArrayList<HologramObject> lines);
+	NMSHologram spawnHologram(Location loc, ArrayList<HologramObject> lines);
 	boolean teleportFast(Entity en, Location loc);
 	void stealPlayerControls(Location loc, Player who);
 	void playMidi(Player to, boolean repeat, File midi) throws MidiUnavailableException, InvalidMidiDataException, IOException;
@@ -30,4 +30,5 @@ public interface NMSUtil {
 	NPC spawnNPC(String name, Location location, String value, String signature);
 	NPC spawnNPC(String name, Location location);
 	NMSEntity getNMSEntity(Entity en);
+	boolean isNMSEntity(Entity en);
 }

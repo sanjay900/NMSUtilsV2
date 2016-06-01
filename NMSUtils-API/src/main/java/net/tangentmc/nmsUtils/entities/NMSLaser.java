@@ -18,6 +18,6 @@ public interface NMSLaser extends NMSEntity{
 	NMSLaser getSourcePart();
 	NMSLaser getDestinationPart();
 	default boolean willSave() { return false; }
-
+	void remove();
 	List<NMSLaser> getAllEntities();
 }

@@ -18,7 +18,7 @@
 			<url>http://repo.dmulloy2.net/content/groups/public/</url>
 		</repository>
 		<repository>
-			<url>https://maven.tangentmc.net/repository/tangent/</url>
+			<url>http://socketio.tangentmc.net:8081/repository/tangent/</url>
 			<id>tangentmc</id>
 		</repository>
 	</repositories>

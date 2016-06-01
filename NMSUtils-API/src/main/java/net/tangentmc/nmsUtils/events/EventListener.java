@@ -70,6 +70,6 @@ public class EventListener implements Listener {
 	}
 	@EventHandler
 	public void collide(EntityCollideWithEntityEvent evt) {
-		System.out.print(evt);
+		//System.out.print(evt);
 	}
 }

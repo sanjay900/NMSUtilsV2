@@ -9,17 +9,17 @@ import com.google.common.collect.Table;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import net.minecraft.server.v1_9_R1.*;
+import net.sf.cglib.proxy.Enhancer;
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
-import net.tangentmc.nmsUtils.entities.NMSArmorStand;
-import net.tangentmc.nmsUtils.entities.NMSEntity;
-import net.tangentmc.nmsUtils.entities.NMSLaser;
-import net.tangentmc.nmsUtils.entities.NPCManager;
+import net.tangentmc.nmsUtils.entities.*;
 import net.tangentmc.nmsUtils.jinglenote.JingleNoteManager;
 import net.tangentmc.nmsUtils.jinglenote.MidiJingleSequencer;
 import net.tangentmc.nmsUtils.utils.Validator;
+import net.tangentmc.nmsUtils.v1_9_R1.entities.CraftHologramEntity;
 import net.tangentmc.nmsUtils.v1_9_R1.entities.LaserEntitiesGuardian;
 import net.tangentmc.nmsUtils.v1_9_R1.entities.NPC;
+import net.tangentmc.nmsUtils.v1_9_R1.entities.effects.Collideable;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -35,6 +35,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -57,10 +58,10 @@ public class NMSUtilImpl implements NMSUtil, Listener {
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketListener(this));
         validateEntityMethod = net.minecraft.server.v1_9_R1.World.class.getDeclaredMethod("b", net.minecraft.server.v1_9_R1.Entity.class);
         validateEntityMethod.setAccessible(true);
-       // NMSEntityTypes.registerEntities();
+        NMSEntityTypes.registerEntities();
         npcmanager = new NPCManager();
         Bukkit.getPluginManager().registerEvents(this, NMSUtils.getInstance());
-        //Bukkit.getWorlds().forEach(this::trackWorldEntities);
+        Bukkit.getWorlds().forEach(this::trackWorldEntities);
     }
     WeakHashMap<UUID,WorldManager> managers = new WeakHashMap<>();
     @Override
@@ -88,7 +89,7 @@ public class NMSUtilImpl implements NMSUtil, Listener {
         while (ids.size() >= 128) {
             final int[] rawIds = new int[127];
             for (int i = 0; i < rawIds.length; i++) {
-                rawIds[i] = ids.remove(0).intValue();
+                rawIds[i] = ids.remove(0);
             }
             PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_DESTROY);
             packet.getIntegerArrays().write(0, rawIds);
@@ -100,7 +101,7 @@ public class NMSUtilImpl implements NMSUtil, Listener {
         }
         final int[] rawIds = new int[ids.size()];
         for (int i = 0; i < rawIds.length; i++) {
-            rawIds[i] = ids.remove(0).intValue();
+            rawIds[i] = ids.remove(0);
         }
         PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_DESTROY);
         packet.getIntegerArrays().write(0, rawIds);
@@ -156,11 +157,11 @@ public class NMSUtilImpl implements NMSUtil, Listener {
         return laser.getBukkitEntity();
     }
 
-	/*@Override
-	public NMSHologram spawnHologram(Location loc, ArrayList<HologramObject> lines) {
-		HologramEntity holo = new HologramEntity(loc,lines);
-		return holo.getBukkitEntity();
-	}*/
+	@Override
+	public NMSHologram spawnHologram(Location loc, ArrayList<HologramFactory.HologramObject> lines) {
+		CraftHologramEntity.HologramEntity holo = new CraftHologramEntity.HologramEntity(loc,lines);
+		return NMSHologram.wrap(holo.getBukkitEntity());
+	}
 
     @Override
     public void playMidi(Player to, boolean repeat, File midi)
@@ -259,9 +260,110 @@ public class NMSUtilImpl implements NMSUtil, Listener {
     }
 
     @Override
-    public NMSEntity getNMSEntity(Entity en) {
-        if (en.getType() == EntityType.ARMOR_STAND) {
+    public NMSEntity getNMSEntity(Entity en2) {
+        if (en2 instanceof CraftHologramEntity) {
+            return new NMSHologram() {
+                Entity en = en2;
+                @Override
+                public List<Entity> getLines() {
+                    return ((CraftHologramEntity) en).getLines();
+                }
+
+                @Override
+                public void setLines(HologramFactory.HologramObject... lines) {
+                    ((CraftHologramEntity) en).setLines(lines);
+                }
+
+                @Override
+                public void setLine(int i, String line) {
+                    ((CraftHologramEntity) en).setLine(i, line);
+                }
+
+                @Override
+                public void addLine(String line) {
+                    ((CraftHologramEntity) en).addLine(line);
+                }
+
+                @Override
+                public void addItem(ItemStack stack) {
+                    ((CraftHologramEntity) en).addItem(stack);
+                }
+
+                @Override
+                public void addBlock(ItemStack stack) {
+                    ((CraftHologramEntity) en).addBlock(stack);
+                }
+
+                @Override
+                public void removeLine(int idx) {
+                    ((CraftHologramEntity) en).removeLine(idx);
+                }
+
+                @Override
+                public void remove() {
+                    en.remove();
+                }
+
+                @Override
+                public void setFrozen(boolean b) {
+                    if (b) {
+                        en.setMetadata(NMSEntity.FROZEN_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
+                    } else {
+                        if (en.hasMetadata(NMSEntity.FROZEN_TAG))
+                            en.removeMetadata(NMSEntity.FROZEN_TAG,NMSUtils.getInstance());
+                    }
+                }
+
+                @Override
+                public void setCollides(boolean b) {
+                    if (b) {
+                        en.setMetadata(NMSEntity.COLLIDE_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
+                    } else {
+                        if (en.hasMetadata(NMSEntity.COLLIDE_TAG))
+                            en.removeMetadata(NMSEntity.COLLIDE_TAG,NMSUtils.getInstance());
+                    }
+                }
+
+                @Override
+                public void setWillSave(boolean b) {
+                    if (b) {
+                        en.setMetadata(NMSEntity.SAVE_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
+                    } else {
+                        if (en.hasMetadata(NMSEntity.SAVE_TAG))
+                            en.removeMetadata(NMSEntity.SAVE_TAG,NMSUtils.getInstance());
+                    }
+                }
+
+                @Override
+                public void spawn() {
+                    if (!this.willSave()) {
+                        NMSUtilImpl.addEntityToWorld(((CraftEntity)en).getHandle().world, ((CraftEntity)en).getHandle());
+                    }
+                }
+
+                @Override
+                public boolean willSave() {
+                    return en.hasMetadata(NMSEntity.SAVE_TAG);
+                }
+
+                @Override
+                public Entity getEntity() {
+                    return en;
+                }
+
+                @Override
+                public boolean isFrozen() {
+                    return en.hasMetadata(NMSEntity.FROZEN_TAG);
+                }
+
+                @Override
+                public boolean willCollide() {
+                    return en.hasMetadata(NMSEntity.COLLIDE_TAG);
+                }
+            };
+        } else  if (en2.getType() == EntityType.ARMOR_STAND) {
             return new NMSArmorStand() {
+                Entity en = en2;
                 public void lock() {
                     NBTTagCompound tag = NMSUtilImpl.getTag(((CraftEntity)en).getHandle());
                     tag.setInt("DisabledSlots", 2039583);
@@ -285,6 +387,16 @@ public class NMSUtilImpl implements NMSUtil, Listener {
 
                 @Override
                 public void setCollides(boolean b) {
+                    net.minecraft.server.v1_9_R1.Entity en3 = ((CraftEntity)en).getHandle();
+                    if (!Enhancer.isEnhanced(en3.getClass())) {
+                        Enhancer enhancer = new Enhancer();
+                        enhancer.setSuperclass(en.getClass());
+                        //Load from bukkits class loader not the default one
+                        enhancer.setClassLoader(NMSCraftWorld.class.getClassLoader());
+                        enhancer.setCallback(Collideable.callback);
+                        en3 = (net.minecraft.server.v1_9_R1.Entity) enhancer.create(new Class[]{World.class},new Object[]{en3.getWorld()});
+
+                    }
                     if (b) {
                         en.setMetadata(NMSEntity.COLLIDE_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
                     } else {
@@ -294,7 +406,7 @@ public class NMSUtilImpl implements NMSUtil, Listener {
                 }
 
                 @Override
-                public void setSaves(boolean b) {
+                public void setWillSave(boolean b) {
                     if (b) {
                         en.setMetadata(NMSEntity.SAVE_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
                     } else {
@@ -324,9 +436,14 @@ public class NMSUtilImpl implements NMSUtil, Listener {
                 public boolean willCollide() {
                     return en.hasMetadata(NMSEntity.COLLIDE_TAG);
                 }
+                @Override
+                public ArmorStand getEntity() {
+                    return (ArmorStand) en;
+                }
             };
         } else {
             return new NMSEntity() {
+                Entity en = en2;
                 @Override
                 public void setFrozen(boolean b) {
                     if (b) {
@@ -348,7 +465,7 @@ public class NMSUtilImpl implements NMSUtil, Listener {
                 }
 
                 @Override
-                public void setSaves(boolean b) {
+                public void setWillSave(boolean b) {
                     if (b) {
                         en.setMetadata(NMSEntity.SAVE_TAG, new FixedMetadataValue(NMSUtils.getInstance(), true));
                     } else {
@@ -378,7 +495,17 @@ public class NMSUtilImpl implements NMSUtil, Listener {
                 public boolean willCollide() {
                     return en.hasMetadata(NMSEntity.COLLIDE_TAG);
                 }
+                @Override
+                public Entity getEntity() {
+                    return en;
+                }
             };
         }
+    }
+
+    @Override
+    public boolean isNMSEntity(Entity en) {
+        net.minecraft.server.v1_9_R1.Entity added = ((CraftEntity)en).getHandle();
+        return en.getType() != EntityType.PLAYER && !Enhancer.isEnhanced(added.getClass());
     }
 }

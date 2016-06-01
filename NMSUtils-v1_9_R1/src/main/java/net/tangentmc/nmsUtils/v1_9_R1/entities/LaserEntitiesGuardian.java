@@ -62,16 +62,10 @@ public class LaserEntitiesGuardian {
 		}
 		@Override
 		public void remove() {
-			for (Entity e: ((LaserEntity)this.getHandle()).getOwnEntities()) {
-				if (e != null)
-					e.die();
-			}
+			((LaserEntity) this.getHandle()).getOwnEntities().stream().filter(e -> e != null).forEach(Entity::die);
 			LaserEntity extraLoop = ((LaserEntity)this.getHandle()).extra;
 			while (extraLoop != null) {
-				for (Entity e: extraLoop.getOwnEntities()) {
-					if (e != null)
-						e.die();
-				}
+				extraLoop.getOwnEntities().stream().filter(e -> e != null).forEach(Entity::die);
 				extraLoop = extraLoop.extra;
 			}
 		}
@@ -235,7 +229,7 @@ public class LaserEntitiesGuardian {
 		}
 
 		@Override
-		public void setSaves(boolean b) {
+		public void setWillSave(boolean b) {
 
 		}
 
@@ -250,6 +244,11 @@ public class LaserEntitiesGuardian {
 		//Lasers never save.
 		@Override
 		public boolean willSave() {	return false; }
+
+		@Override
+		public org.bukkit.entity.Entity getEntity() {
+			return this;
+		}
 
 		@Override
 		public boolean willCollide() {
@@ -341,7 +340,7 @@ public class LaserEntitiesGuardian {
 		}
 
 		@Override
-		public void setSaves(boolean b) {
+		public void setWillSave(boolean b) {
 
 		}
 
@@ -352,6 +351,11 @@ public class LaserEntitiesGuardian {
 		//Lasers never save.
 		@Override
 		public boolean willSave() {	return false; }
+
+		@Override
+		public org.bukkit.entity.Entity getEntity() {
+			return this;
+		}
 
 		@Override
 		public boolean willCollide() {
@@ -456,7 +460,7 @@ public class LaserEntitiesGuardian {
 		}
 
 		@Override
-		public void setSaves(boolean b) {
+		public void setWillSave(boolean b) {
 
 		}
 
@@ -468,6 +472,11 @@ public class LaserEntitiesGuardian {
 		//Lasers never save.
 		@Override
 		public boolean willSave() {	return false; }
+
+		@Override
+		public org.bukkit.entity.Entity getEntity() {
+			return this;
+		}
 
 		@Override
 		public boolean willCollide() {

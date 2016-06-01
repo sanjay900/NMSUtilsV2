@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.server.v1_9_R1.*;
+import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Proxy;
 import net.tangentmc.nmsUtils.NMSUtil;
 import org.bukkit.Bukkit;
@@ -69,13 +70,12 @@ public class WorldManager implements IWorldAccess {
 			if (added instanceof EntityPlayer && !this.players.add((EntityPlayer) added)) {
 				return;
 			}
-			if (!(added.getBukkitEntity() instanceof NMSEntity) && !(added instanceof EntityPlayer) && !added.getBukkitEntity().hasMetadata("instrumented")) {
-				
+			if (!(added instanceof EntityPlayer) && !Enhancer.isEnhanced(added.getClass()) && added.getClass().getName().startsWith("net.minecraft.server") && !added.getBukkitEntity().hasMetadata("instrumented")) {
 				new BukkitRunnable(){
 					@Override
 					public void run() {
 						replaceEntity(added);
-					}}.runTaskLater(NMSUtils.getInstance(),1l);
+					}}.runTaskLater(NMSUtils.getInstance(),1L);
 					return;
 			}
 			Bukkit.getPluginManager().callEvent(new EntitySpawnEvent(added.getBukkitEntity()));

@@ -1,18 +1,34 @@
 package net.tangentmc.nmsUtils.v1_9_R1.entities.effects;
 
 import net.minecraft.server.v1_9_R1.*;
+import net.sf.cglib.proxy.MethodInterceptor;
 import net.tangentmc.nmsUtils.events.EntityCollideWithBlockEvent;
 import net.tangentmc.nmsUtils.events.EntityCollideWithEntityEvent;
 import net.tangentmc.nmsUtils.events.EntityMoveEvent;
 import net.tangentmc.nmsUtils.utils.FaceUtil;
+import net.tangentmc.nmsUtils.v1_9_R1.entities.CraftHologramEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EntityType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Collideable {
+	static final String TICK_METHOD = "m";
+	public static MethodInterceptor callback = (obj, method, args, proxy) -> {
+		if(method.getDeclaringClass() != Object.class && method.getName().equals(TICK_METHOD)) {
+			Collideable.testCollision((net.minecraft.server.v1_9_R1.Entity)obj);
+			proxy.invokeSuper(obj, args);
+			Collideable.testMovement((net.minecraft.server.v1_9_R1.Entity)obj);
+			return null;
+		} else {
+			return proxy.invokeSuper(obj, args);
+		}
+	};
+
 	public static void testMovement(Entity en) {
 		org.bukkit.entity.Entity e = en.getBukkitEntity();
 		if (en.locX != en.lastX || en.locY != en.lastY || en.locZ != en.lastZ || en.pitch != en.lastPitch || en.yaw != en.lastYaw) {
@@ -20,23 +36,19 @@ public class Collideable {
 			Bukkit.getPluginManager().callEvent(evt);
 		}
 	}
-	public static void testCollision(Entity en, Entity... ignore) {
+    public static void testCollision(Entity en) {
+        testCollision(en, new ArrayList<>());
+    }
+	public static void testCollision(Entity en, List<Entity> ignore) {
 		org.bukkit.entity.Entity e = en.getBukkitEntity();
 		AxisAlignedBB bb = en.getBoundingBox();
-		if (en.getBukkitEntity().hasMetadata("sizeY")) {
-			double d = en.getBukkitEntity().getMetadata("sizeY").get(0).asDouble();
-			double d2 = en.locY;
-			bb = new AxisAlignedBB(bb.a,d2,bb.c,bb.d,d2+d,bb.f);
-		}
-		List<Entity> list = en.world.getEntities(en, bb.grow(0.3, 0, 0.3));
+		List<Entity> list = en.world.getEntities(en, bb);
 		if (en instanceof EntityProjectile) {
 			list.remove(((EntityProjectile)en).getShooter());
 		}
 		if (en.getVehicle() != null) list.remove(en.getVehicle());
 		list.removeAll(en.passengers);
-
-		list.removeAll(Arrays.asList(ignore));
-
+		list.removeAll(ignore);
 		for (int i = 0; i < list.size(); ++i) {
 			Entity entity1 = list.get(i);
 			EntityCollideWithEntityEvent ev = new EntityCollideWithEntityEvent(e, entity1.getBukkitEntity(),false);

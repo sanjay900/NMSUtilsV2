@@ -6,8 +6,6 @@ import net.minecraft.server.v1_9_R1.World;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.tangentmc.nmsUtils.NMSUtils;
-import net.tangentmc.nmsUtils.entities.NMSArmorStand;
-import net.tangentmc.nmsUtils.entities.NMSEntity;
 import net.tangentmc.nmsUtils.v1_9_R1.entities.effects.Collideable;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.*;
@@ -37,6 +35,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionData;
@@ -44,6 +43,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.util.Vector;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.*;
 
 public class NMSCraftWorld extends CraftWorld{
@@ -74,27 +74,33 @@ public class NMSCraftWorld extends CraftWorld{
         enhancer.setSuperclass(clazz);
         //Load from bukkits class loader not the default one
         enhancer.setClassLoader(NMSCraftWorld.class.getClassLoader());
-        enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> {
-            if(method.getDeclaringClass() != Object.class && method.getName().equals("m")) {
-                Collideable.testCollision((net.minecraft.server.v1_9_R1.Entity)obj);
-                proxy.invokeSuper(obj, args);
-                Collideable.testMovement((net.minecraft.server.v1_9_R1.Entity)obj);
-                return null;
-            } else {
-                return proxy.invokeSuper(obj, args);
-            }
-        });
-        //We should do a better fit for constructors
+        enhancer.setCallback(Collideable.callback);
         Class<?>[] classes = new Class[args2.length];
         for (int i = 0; i < args2.length; i++) {
             classes[i] = args2[i].getClass();
-
-            if (World.class.isAssignableFrom(classes[i])) {
-                classes[i] = World.class;
+            try {
+                classes[i] = (Class<?>) classes[i].getField("TYPE").get(null);
+            } catch (IllegalAccessException | NoSuchFieldException ignored) {
 
             }
         }
-        return (net.minecraft.server.v1_9_R1.Entity) enhancer.create(classes,args2);
+        Constructor<?> cs = null;
+        for (Constructor<?> s : clazz.getConstructors()) {
+            boolean b = true;
+
+            if (s.getParameterTypes().length != classes.length) continue;
+            //We should do a better fit for constructors
+            for (int i = 0; i < classes.length; i++) {
+              if (!s.getParameterTypes()[i].isAssignableFrom(classes[i]) && !classes[i].isAssignableFrom(s.getParameterTypes()[i])) {
+                  b = false;
+              }
+            }
+            if (b) {
+                cs = s;
+                break;
+            }
+        }
+        return (net.minecraft.server.v1_9_R1.Entity) enhancer.create(cs.getParameterTypes(),args2);
     }
     @SuppressWarnings("unchecked")
     //For updates, use regex entity = new (\w*)\(([()A-z ,_]*)\); and replace with entity = instrument($1.class, $2);
@@ -337,6 +343,7 @@ public class NMSCraftWorld extends CraftWorld{
             entity = instrument(EntityAreaEffectCloud.class, world, x, y, z);
         }
         if (entity != null) {
+            entity.getBukkitEntity().setMetadata("instrumented",new FixedMetadataValue(NMSUtils.getInstance(),true));
             return entity;
         }
 
@@ -442,7 +449,7 @@ public class NMSCraftWorld extends CraftWorld{
         EntityItem entity = (EntityItem) instrument(EntityItem.class,world.getHandle(), loc.getX(), loc.getY(), loc.getZ(), CraftItemStack.asNMSCopy(item));
         entity.pickupDelay = 10;
         world.getHandle().addEntity(entity);
-        // TODO this is inconsistent with how Entity.getBukkitEntity() works.
+        // this is inconsistent with how Entity.getBukkitEntity() works.
         // However, this entity is not at the moment backed by a server entity class so it may be left.
         return new CraftItem(world.getHandle().getServer(), entity);
     }
@@ -798,10 +805,6 @@ public class NMSCraftWorld extends CraftWorld{
 
     public <T extends Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException {
         return spawn(location, clazz, SpawnReason.CUSTOM);
-    }
-
-    public FallingBlock spawnFallingBlock(Location location, int blockId, byte blockData) throws IllegalArgumentException {
-        return spawnFallingBlock(location, org.bukkit.Material.getMaterial(blockId), blockData);
     }
 
 
