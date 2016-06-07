@@ -6,12 +6,12 @@
 
     <groupId>net.tangentmc</groupId>
     <artifactId>SpigotMcRunner</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>2.0.2-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.9.2-R0.1-SNAPSHOT</version>
+            <version>1.9.4-R0.1-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
     </dependencies>

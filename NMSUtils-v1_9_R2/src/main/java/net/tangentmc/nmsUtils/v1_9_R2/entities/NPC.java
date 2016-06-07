@@ -17,21 +17,21 @@
  * along with DarkSeraphim's NPC library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.tangentmc.nmsUtils.v1_9_R1.entities;
+package net.tangentmc.nmsUtils.v1_9_R2.entities;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import net.minecraft.server.v1_9_R1.*;
-import net.minecraft.server.v1_9_R1.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.effects.Collideable;
+import net.minecraft.server.v1_9_R2.*;
+import net.minecraft.server.v1_9_R2.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.effects.Collideable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_9_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
-import org.bukkit.entity.*;
+import org.bukkit.craftbukkit.v1_9_R2.CraftServer;
+import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  * @author DarkSeraphim.
  */
 @SuppressWarnings("rawtypes")
-public class NPC extends EntityPlayer{
+public class NPC extends EntityPlayer {
 	public static class CraftNPC extends CraftPlayer implements net.tangentmc.nmsUtils.entities.NPC{
 		public CraftNPC(NPC entity) {
 			super((CraftServer) Bukkit.getServer(), entity);

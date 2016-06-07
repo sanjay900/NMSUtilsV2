@@ -1,4 +1,4 @@
-package net.tangentmc.nmsUtils.v1_9_R1;
+package net.tangentmc.nmsUtils.v1_9_R2;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -8,7 +8,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import net.minecraft.server.v1_9_R1.*;
+import net.minecraft.server.v1_9_R2.*;
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.entities.*;
@@ -16,24 +16,25 @@ import net.tangentmc.nmsUtils.events.EntityMoveEvent;
 import net.tangentmc.nmsUtils.jinglenote.JingleNoteManager;
 import net.tangentmc.nmsUtils.jinglenote.MidiJingleSequencer;
 import net.tangentmc.nmsUtils.utils.Validator;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.CraftHologramEntity;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.LaserEntitiesGuardian;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.NPC;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.basic.BasicNMSArmorStand;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.basic.BasicNMSEntity;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.basic.NMSHologramWrapper;
-import net.tangentmc.nmsUtils.v1_9_R1.entities.effects.Collideable;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.CraftHologramEntity;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.LaserEntities;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.NPC;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.basic.BasicNMSArmorStand;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.basic.BasicNMSEntity;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.basic.NMSHologramWrapper;
+import net.tangentmc.nmsUtils.v1_9_R2.entities.effects.Collideable;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Minecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -49,8 +50,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import net.tangentmc.nmsUtils.v1_9_R1.entities.NPC;
-
 @Getter
 public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
 
@@ -62,7 +61,7 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
     @SneakyThrows
     public NMSUtilImpl() {
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketListener(this));
-        validateEntityMethod = net.minecraft.server.v1_9_R1.World.class.getDeclaredMethod("b", net.minecraft.server.v1_9_R1.Entity.class);
+        validateEntityMethod = net.minecraft.server.v1_9_R2.World.class.getDeclaredMethod("b", net.minecraft.server.v1_9_R2.Entity.class);
         validateEntityMethod.setAccessible(true);
         NMSEntityTypes.registerEntities();
         npcmanager = new NPCManager();
@@ -84,7 +83,7 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         managers.get(w.getUID()).remove();
     }
 
-    public net.minecraft.server.v1_9_R1.World getWorld(World w) {
+    public net.minecraft.server.v1_9_R2.World getWorld(World w) {
         return ((CraftWorld) w).getHandle();
     }
 
@@ -127,20 +126,34 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
 
     @Override
     public boolean teleportFast(Entity entity, Location location, org.bukkit.util.Vector velocity) {
-        net.minecraft.server.v1_9_R1.Entity en = ((CraftEntity) entity).getHandle();
-        if (en.getVehicle() != null) {
-            en = en.getVehicle();
+        if (entity.isInsideVehicle()) {
+            entity = entity.getVehicle();
         }
-        ((WorldServer) getWorld(entity.getWorld())).getTracker().untrackEntity(en);
+        net.minecraft.server.v1_9_R2.Entity en = ((CraftEntity) entity).getHandle();
+        //Flush the removal queue so that it is done first then we teleport and set velocity
         entity.getWorld().getPlayers().forEach(this::flushEntityRemoveQueue);
-        en.world = ((CraftWorld) location.getWorld()).getHandle();
+        EntityTracker tracker = ((WorldServer) getWorld(entity.getWorld())).getTracker();
+        if (!(entity instanceof Minecart)) {
+            tracker.untrackEntity(en);
+        }
         en.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        en.getBukkitEntity().setVelocity(velocity);
-        ((WorldServer) getWorld(entity.getWorld())).getTracker().track(en);
+        en.motX = velocity.getX();
+        en.motY = velocity.getY();
+        en.motZ = velocity.getZ();
+
+        if (!(entity instanceof Minecart)) {
+            tracker.track(en);
+        } else {
+            EntityTrackerEntry entry = tracker.trackedEntities.get(en.getId());
+            //Forcibly update this entity this tick
+            //Why 3? The tracker runs every three ticks, but you cant set a to 0 or it wont run at all
+            //At least, it runs every three ticks for MineCarts anyway.
+            entry.a = 3;
+        }
+        tracker.updatePlayers();
         return true;
     }
-
-    public static NBTTagCompound getTag(net.minecraft.server.v1_9_R1.Entity en) {
+    public static NBTTagCompound getTag(net.minecraft.server.v1_9_R2.Entity en) {
         NBTTagCompound tag = new NBTTagCompound();
         en.c(tag);
         return tag;
@@ -157,7 +170,7 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
 
     @Override
     public NMSLaser spawnLaser(Location init) {
-        LaserEntitiesGuardian.CraftLaserEntity.LaserEntity laser = new LaserEntitiesGuardian.CraftLaserEntity.LaserEntity(((CraftWorld) init.getWorld()).getHandle(), init);
+        LaserEntities.CraftLaserEntity.LaserEntity laser = new LaserEntities.CraftLaserEntity.LaserEntity(((CraftWorld) init.getWorld()).getHandle(), init);
         return laser.getBukkitEntity();
     }
 
@@ -183,7 +196,7 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
 
     private static Method validateEntityMethod;
 
-    public static boolean addEntityToWorld(net.minecraft.server.v1_9_R1.World world, net.minecraft.server.v1_9_R1.Entity nmsEntity) {
+    public static boolean addEntityToWorld(net.minecraft.server.v1_9_R2.World world, net.minecraft.server.v1_9_R2.Entity nmsEntity) {
         Validator.isTrue(Bukkit.isPrimaryThread(), "Async entity add");
 
         if (validateEntityMethod == null) {
@@ -193,7 +206,7 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         final int chunkZ = MathHelper.floor(nmsEntity.locZ / 16.0);
         //This function can be called to add entities that arent in loaded chunks. When that happenes,
         //queue them for later.
-        if (!((WorldServer) world).getChunkProviderServer().isChunkLoaded(chunkX, chunkZ)) {
+        if (!((WorldServer) world).getChunkProviderServer().isLoaded(chunkX, chunkZ)) {
             if (nmsEntity.getBukkitEntity() instanceof NMSEntity) {
                 if (!customEntities.contains(chunkX, chunkZ)) customEntities.put(chunkX, chunkZ, new ArrayList<>());
                 customEntities.get(chunkX, chunkZ).add((NMSEntity) nmsEntity.getBukkitEntity());
@@ -285,11 +298,11 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
     public void run() {
         for (World w : Bukkit.getWorlds()) {
             for (Entity en : w.getEntities()) {
-                net.minecraft.server.v1_9_R1.Entity added = ((CraftEntity) en).getHandle();
+                net.minecraft.server.v1_9_R2.Entity added = ((CraftEntity) en).getHandle();
                 if (added.lastX != added.locX || added.lastY != added.locY || added.lastZ != added.locZ || added.lastPitch != added.pitch || added.lastYaw != added.yaw) {
                     Bukkit.getPluginManager().callEvent(new EntityMoveEvent(en, added.lastX, added.lastY, added.lastZ, added.locX, added.locY, added.locZ, added.pitch, added.lastPitch, added.yaw, added.lastYaw));
                 }
-                if (en.hasMetadata(NMSEntity.COLLIDE_TAG) || en instanceof CraftHologramEntity || en instanceof CraftHologramEntity.CraftHologramPart) {
+                if (en.hasMetadata(NMSEntity.COLLIDE_TAG)) {
                     Collideable.testCollision(added);
                 }
             }

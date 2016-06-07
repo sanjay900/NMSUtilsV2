@@ -66,7 +66,6 @@ public class EventListener implements Listener {
 			}
 		});
 	}
-
 	@EventHandler
 	public void chunkLoad(ChunkLoadEvent evt) {
 		util.getUtil().loadChunk(evt.getChunk());
@@ -78,9 +77,5 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void worldUnload(WorldUnloadEvent evt) {
 		util.getUtil().untrackWorldEntities(evt.getWorld());
-	}
-	@EventHandler
-	public void collide(EntityCollideWithEntityEvent evt) {
-		//System.out.print(evt);
 	}
 }

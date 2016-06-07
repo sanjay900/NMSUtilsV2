@@ -23,12 +23,12 @@ public interface NMSUtil {
 	void loadChunk(Chunk c);
 	NMSLaser spawnLaser(Location init);
 	NMSHologram spawnHologram(Location loc, ArrayList<HologramObject> lines);
-	boolean teleportFast(Entity en, Location loc);
+	boolean teleportFast(Entity entity, Location location, org.bukkit.util.Vector velocity);
+
 	void stealPlayerControls(Location loc, Player who);
 	void playMidi(Player to, boolean repeat, File midi) throws MidiUnavailableException, InvalidMidiDataException, IOException;
 	void playMidiNear(Location near, double area, boolean repeat, File midi) throws MidiUnavailableException, InvalidMidiDataException, IOException;
 	NPC spawnNPC(String name, Location location, String value, String signature);
 	NPC spawnNPC(String name, Location location);
 	NMSEntity getNMSEntity(Entity en);
-	boolean isNMSEntity(Entity en);
 }

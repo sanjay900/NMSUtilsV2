@@ -8,10 +8,15 @@ public interface NMSEntity {
     String COLLIDE_TAG = "collides";
     String FROZEN_TAG = "frozen";
 	void setFrozen(boolean b);
+
+    /**
+     * Set an entity to respond to collisions.
+     * @param b
+     */
     void setCollides(boolean b);
     void setWillSave(boolean b);
+    void setHasBoundingBox(boolean b);
     void spawn();
-
     boolean willSave();
     Entity getEntity();
     boolean isFrozen();

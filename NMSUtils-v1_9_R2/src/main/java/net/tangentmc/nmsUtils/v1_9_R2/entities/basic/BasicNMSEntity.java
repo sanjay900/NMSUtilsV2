@@ -1,9 +1,9 @@
-package net.tangentmc.nmsUtils.v1_9_R1.entities.basic;
+package net.tangentmc.nmsUtils.v1_9_R2.entities.basic;
 
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.entities.NMSEntity;
-import net.tangentmc.nmsUtils.v1_9_R1.NMSUtilImpl;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftEntity;
+import net.tangentmc.nmsUtils.v1_9_R2.NMSUtilImpl;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.metadata.FixedMetadataValue;
 
@@ -34,6 +34,8 @@ public class BasicNMSEntity implements NMSEntity {
         }
     }
 
+    net.minecraft.server.v1_9_R2.Entity orig = null;
+
     @Override
     public void setWillSave(boolean b) {
         en.setCustomNameVisible(false);
@@ -42,7 +44,6 @@ public class BasicNMSEntity implements NMSEntity {
 
     @Override
     public void setHasBoundingBox(boolean b) {
-
         ((CraftEntity) en).getHandle().a(new NullBoundingBox());
     }
 

@@ -3,14 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.tangentmc</groupId>
 	<artifactId>NMSUtils</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
+	<version>2.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<modules>
 		<module>NMSUtils-API</module>
 		<module>NMSUtils-v1_9_R1</module>
+		<module>NMSUtils-v1_9_R2</module>
 		<module>NMSUtils-plugin</module>
         <module>SpigotMCRunner</module>
-    </modules>
+	</modules>
 
 	<repositories>
 		<repository>
@@ -28,7 +29,6 @@
 			<artifactId>expiringmap</artifactId>
 			<version>0.5.1</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -51,29 +51,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>2.0.54-beta</version>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>3.2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<scope>provided</scope>
-			<version>1.9.2-R0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.0</version>
+				<version>3.5.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>

@@ -234,6 +234,11 @@ public class LaserEntitiesGuardian {
 		}
 
 		@Override
+		public void setHasBoundingBox(boolean b) {
+
+		}
+
+		@Override
 		public void spawn() {
 			for (Entity en: ((LaserEntity)this.entity).getAllEntities()) {
 				if (en != null)
@@ -341,6 +346,11 @@ public class LaserEntitiesGuardian {
 
 		@Override
 		public void setWillSave(boolean b) {
+
+		}
+
+		@Override
+		public void setHasBoundingBox(boolean b) {
 
 		}
 
@@ -461,6 +471,11 @@ public class LaserEntitiesGuardian {
 
 		@Override
 		public void setWillSave(boolean b) {
+
+		}
+
+		@Override
+		public void setHasBoundingBox(boolean b) {
 
 		}
 

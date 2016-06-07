@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import net.tangentmc.nmsUtils.NMSUtils;
 
 public class NPCManager implements Listener {
-	private Set<NPC> npcs = Collections.newSetFromMap(new WeakHashMap<NPC,Boolean>());
+	private Set<NPC> npcs = Collections.newSetFromMap(new WeakHashMap<>());
 	public NPCManager() {
 		Bukkit.getPluginManager().registerEvents(this, NMSUtils.getInstance());
 	}

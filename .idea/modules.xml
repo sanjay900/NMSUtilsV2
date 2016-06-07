@@ -5,7 +5,8 @@
       <module fileurl="file://$PROJECT_DIR$/NMSUtils.iml" filepath="$PROJECT_DIR$/NMSUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/NMSUtils-API/NMSUtils-API.iml" filepath="$PROJECT_DIR$/NMSUtils-API/NMSUtils-API.iml" />
       <module fileurl="file://$PROJECT_DIR$/NMSUtils-plugin/NMSUtils-plugin.iml" filepath="$PROJECT_DIR$/NMSUtils-plugin/NMSUtils-plugin.iml" />
-      <module fileurl="file://$PROJECT_DIR$/NMSUtils-v1_9_R1/NMSUtils-v1_9_R2.iml" filepath="$PROJECT_DIR$/NMSUtils-v1_9_R1/NMSUtils-v1_9_R2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NMSUtils-v1_9_R1/NMSUtils-v1_9_R1.iml" filepath="$PROJECT_DIR$/NMSUtils-v1_9_R1/NMSUtils-v1_9_R1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NMSUtils-v1_9_R2/NMSUtils-v1_9_R2.iml" filepath="$PROJECT_DIR$/NMSUtils-v1_9_R2/NMSUtils-v1_9_R2.iml" />
       <module fileurl="file://$PROJECT_DIR$/SpigotMCRunner/SpigotMCRunner.iml" filepath="$PROJECT_DIR$/SpigotMCRunner/SpigotMCRunner.iml" />
     </modules>
   </component>
