@@ -24,6 +24,7 @@
         <processorPath useClasspath="true" />
         <module name="NMSUtils-API" />
         <module name="NMSUtils-plugin" />
+        <module name="NMSUtils-v1_10_R1" />
         <module name="NMSUtils-v1_9_R1" />
         <module name="NMSUtils-v1_9_R2" />
         <module name="SpigotMCRunner" />
@@ -33,6 +34,7 @@
       <module name="NMSUtils" target="1.8" />
       <module name="NMSUtils-API" target="1.8" />
       <module name="NMSUtils-plugin" target="1.8" />
+      <module name="NMSUtils-v1_10_R1" target="1.8" />
       <module name="NMSUtils-v1_8_R3" target="1.8" />
       <module name="NMSUtils-v1_9_R1" target="1.8" />
       <module name="NMSUtils-v1_9_R2" target="1.8" />

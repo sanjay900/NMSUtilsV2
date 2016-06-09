@@ -1,25 +1,25 @@
-package net.tangentmc.nmsUtils.v1_9_R2.entities;
+package net.tangentmc.nmsUtils.v1_10_R1.entities;
 
 import lombok.Getter;
 import lombok.ToString;
-import net.minecraft.server.v1_9_R2.*;
+import net.minecraft.server.v1_10_R1.*;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.entities.HologramFactory.HeadItem;
 import net.tangentmc.nmsUtils.entities.HologramFactory.HologramObject;
 import net.tangentmc.nmsUtils.entities.HologramFactory.HologramType;
 import net.tangentmc.nmsUtils.entities.NMSArmorStand;
 import net.tangentmc.nmsUtils.utils.AnimatedMessage;
-import net.tangentmc.nmsUtils.v1_9_R2.NMSUtilImpl;
-import net.tangentmc.nmsUtils.v1_9_R2.entities.CraftHologramEntity.CraftHologramPart.*;
-import net.tangentmc.nmsUtils.v1_9_R2.entities.basic.NullBoundingBox;
-import net.tangentmc.nmsUtils.v1_9_R2.entities.effects.Collideable;
+import net.tangentmc.nmsUtils.v1_10_R1.NMSUtilImpl;
+import net.tangentmc.nmsUtils.v1_10_R1.entities.CraftHologramEntity.CraftHologramPart.*;
+import net.tangentmc.nmsUtils.v1_10_R1.entities.basic.NullBoundingBox;
+import net.tangentmc.nmsUtils.v1_10_R1.entities.effects.Collideable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_9_R2.CraftServer;
-import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_9_R2.entity.CraftArmorStand;
-import org.bukkit.craftbukkit.v1_9_R2.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_9_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_10_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftArmorStand;
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
@@ -77,7 +77,7 @@ public class CraftHologramEntity extends CraftEntity {
     public void removeLine(int idx) {
         ((HologramEntity)entity).removeLine(idx);
     }
-    public static class HologramEntity extends net.minecraft.server.v1_9_R2.Entity {
+    public static class HologramEntity extends net.minecraft.server.v1_10_R1.Entity {
         ArrayList<HologramPart> lines = new ArrayList<>();
         ArrayList<AnimatedMessage> animations = new ArrayList<>();
         @Override
@@ -267,7 +267,7 @@ public class CraftHologramEntity extends CraftEntity {
 
     }
 
-    public static class CraftHologramPart extends org.bukkit.craftbukkit.v1_9_R2.entity.CraftEntity {
+    public static class CraftHologramPart extends org.bukkit.craftbukkit.v1_10_R1.entity.CraftEntity {
         private HologramEntity parent;
 
         interface HologramPart {
@@ -326,7 +326,7 @@ public class CraftHologramEntity extends CraftEntity {
                     this.setCustomName(parent.animations.get(message).current().getLines()[line]);
                 }
                 this.setInvisible(true);
-                this.setGravity(false);
+                this.setNoGravity(true);
                 this.setPosition(loc.getX(), loc.getY(), loc.getZ());
                 this.setSmall(true);
                 this.setMarker(true);
@@ -342,7 +342,7 @@ public class CraftHologramEntity extends CraftEntity {
             }
             @Override
             public void m() {
-                if (this.hasGravity()) super.m();
+                if (!this.isNoGravity()) super.m();
             }
             @Override
             public void set(HologramObject obj) {
@@ -400,22 +400,16 @@ public class CraftHologramEntity extends CraftEntity {
             }
         }
 
-        public static class ItemHologramEntity extends EntityArmorStand implements HologramPart {
+        public static class ItemHologramEntity implements HologramPart {
             HologramEntity parent;
             HologramItem item;
+            World world;
             public ItemHologramEntity(World world, Location loc, ItemStack stack, HologramEntity parent) {
-                super(world);
                 this.parent = parent;
-                this.getBukkitEntity().setMetadata("instrumented",new FixedMetadataValue(NMSUtils.getInstance(),true));
-                this.setPosition(loc.getX(), loc.getY(), loc.getZ());
-                this.setGravity(false);
-                this.setInvisible(true);
+                this.world = world;
                 item = new HologramItem(world,loc,stack,this);
                 item.ticksLived = 1;
                 item.pickupDelay = 10;
-
-                this.setSmall(true);
-                this.setMarker(true);
                 this.addToWorld();
             }
 
@@ -452,34 +446,24 @@ public class CraftHologramEntity extends CraftEntity {
 
             @Override
             public CraftHologramPart getBukkitEntity() {
-                return new CraftHologramPart(this,parent);
+                return new CraftHologramPart(item,parent);
             }
+
             @Override
-            public void m() {
-                if (!this.dead)
-                    this.startRiding(parent);
+            public double getHeight() {
+                return 0.7;
             }
+
             @Override
-            public void a(NBTTagCompound nbttagcompound) {}
-            @Override
-            public void b(NBTTagCompound nbttagcompound) {}
-            @Override
-            public boolean c(NBTTagCompound nbttagcompound) {
-                return false;
-            }
-            @Override
-            public boolean d(NBTTagCompound nbttagcompound) {
-                return false;
-            }
-            @Override
-            public NBTTagCompound e(NBTTagCompound nbttagcompound) {
-                return nbttagcompound;
+            public void addToWorld() {
+                NMSUtilImpl.addEntityToWorld(world, item);
             }
             public static class HologramItem extends EntityItem {
                 public ItemHologramEntity parent;
                 public HologramItem(World world, Location loc, ItemStack it, ItemHologramEntity parent) {
                     super(world,loc.getX(),loc.getY()-1,loc.getZ(), CraftItemStack.asNMSCopy(it));
                     this.parent = parent;
+                    this.setNoGravity(true);
                 }
                 //Disable pickup.
                 @Override
@@ -507,30 +491,15 @@ public class CraftHologramEntity extends CraftEntity {
                     return nbttagcompound;
                 }
             }
-            @Override
-            public double getHeight() {
-                return 0.7;
-            }
-
-            @Override
-            public void addToWorld() {
-                NMSUtilImpl.addEntityToWorld(world, this);
-                NMSUtilImpl.addEntityToWorld(world, item);
-            }
         }
-        public static class BlockHologramEntity extends EntityArmorStand implements HologramPart {
+        public static class BlockHologramEntity implements HologramPart {
             HologramEntity parent;
             HologramBlock block;
             boolean teleporting;
+            World world;
             public BlockHologramEntity(World world, Location loc, ItemStack stack, HologramEntity parent) {
-                super(world);
+                this.world = world;
                 this.parent = parent;
-                this.getBukkitEntity().setMetadata("instrumented",new FixedMetadataValue(NMSUtils.getInstance(),true));
-                this.setPosition(loc.getX(), loc.getY(), loc.getZ());
-                this.setGravity(false);
-                this.setInvisible(true);
-                this.setSmall(true);
-                this.setMarker(true);
                 block = new HologramBlock(world,loc,stack,this);
                 block.ticksLived = 20;
                 this.addToWorld();
@@ -567,43 +536,28 @@ public class CraftHologramEntity extends CraftEntity {
             }
 
             @Override
-            public CraftHologramPart getBukkitEntity() {
-                return new CraftHologramPart(this,parent);
+            public double getHeight() {
+                return 1;
             }
-            @Override
-            public void m() {
-                if (this.hasGravity()) super.m();
 
-                if (!this.dead && !parent.dead) {
-                    block.ticksLived = 1;
-                }
+            @Override
+            public void addToWorld() {
+                NMSUtilImpl.addEntityToWorld(world, block);
             }
             @Override
-            public void a(NBTTagCompound nbttagcompound) {}
-            @Override
-            public void b(NBTTagCompound nbttagcompound) {}
-            @Override
-            public boolean c(NBTTagCompound nbttagcompound) {
-                return false;
-            }
-            @Override
-            public boolean d(NBTTagCompound nbttagcompound) {
-                return false;
-            }
-            @Override
-            public NBTTagCompound e(NBTTagCompound nbttagcompound) {
-                return nbttagcompound;
+            public CraftHologramPart getBukkitEntity() {
+                return new CraftHologramPart(block,parent);
             }
             public static class HologramBlock extends EntityFallingBlock {
                 public BlockHologramEntity parent;
                 public HologramBlock(World world, Location loc, ItemStack it, BlockHologramEntity parent) {
-                    super(world,loc.getX(),loc.getY(),loc.getZ(),net.minecraft.server.v1_9_R2.Block.getById(it.getType().getId()).fromLegacyData(it.getData().getData()));
+                    super(world,loc.getX(),loc.getY(),loc.getZ(),net.minecraft.server.v1_10_R1.Block.getById(it.getType().getId()).fromLegacyData(it.getData().getData()));
                     this.parent = parent;
+                    this.setNoGravity(true);
                 }
                 @Override
                 public void m() {
-                    if (!dead)
-                    this.startRiding(parent);
+                    this.ticksLived = 1;
                 }
                 @Override
                 public void a(NBTTagCompound nbttagcompound) {}
@@ -621,16 +575,6 @@ public class CraftHologramEntity extends CraftEntity {
                 public NBTTagCompound e(NBTTagCompound nbttagcompound) {
                     return nbttagcompound;
                 }
-            }
-            @Override
-            public double getHeight() {
-                return 1;
-            }
-
-            @Override
-            public void addToWorld() {
-                NMSUtilImpl.addEntityToWorld(world, this);
-                NMSUtilImpl.addEntityToWorld(world, block);
             }
 
         }
@@ -650,7 +594,7 @@ public class CraftHologramEntity extends CraftEntity {
                 en.setHelmet(stack);
                 NMSArmorStand ns = NMSArmorStand.wrap(en);
                 ns.lock();
-                this.setGravity(false);
+                this.setNoGravity(true);
                 this.setInvisible(true);
                 this.setSmall(true);
                 this.setSize((float)height, (float)height);

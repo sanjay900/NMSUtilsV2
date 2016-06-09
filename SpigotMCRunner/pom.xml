@@ -11,10 +11,17 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.9.4-R0.1-SNAPSHOT</version>
+            <version>1.10-R0.1-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>tangentmc</id>
+            <name>TangentMC Internal Repository</name>
+            <url>https://maven.tangentmc.net/repository/tangent/</url>
+        </repository>
+    </distributionManagement>
 
 
 </project>
