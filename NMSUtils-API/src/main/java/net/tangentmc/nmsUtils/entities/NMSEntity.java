@@ -3,11 +3,11 @@ package net.tangentmc.nmsUtils.entities;
 import net.tangentmc.nmsUtils.NMSUtils;
 import org.bukkit.entity.Entity;
 
+import java.util.List;
+
 public interface NMSEntity {
-    String SAVE_TAG = "saves";
+    String WONT_SAVE_TAG = "saves";
     String COLLIDE_TAG = "collides";
-    String FROZEN_TAG = "frozen";
-	void setFrozen(boolean b);
 
     /**
      * Set an entity to respond to collisions.
@@ -16,11 +16,17 @@ public interface NMSEntity {
     void setCollides(boolean b);
     void setWillSave(boolean b);
     void setHasBoundingBox(boolean b);
-    void spawn();
     boolean willSave();
     Entity getEntity();
-    boolean isFrozen();
     boolean willCollide();
+
+    /**
+     * Add a string to an entity that will survive a restart
+     * @param text the string to add
+     */
+    void addEntityTag(String text);
+    boolean hasEntityTag(String text);
+    List<String> getTags();
     static NMSEntity wrap(Entity en) {
         return NMSUtils.getInstance().getUtil().getNMSEntity(en);
     }

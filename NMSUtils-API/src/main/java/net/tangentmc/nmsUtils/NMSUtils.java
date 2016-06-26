@@ -1,5 +1,6 @@
 package net.tangentmc.nmsUtils;
 
+import net.tangentmc.nmsUtils.entities.NMSHologram;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -43,12 +44,12 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	public void onDisable() {
 		Bukkit.getWorlds().forEach(util::untrackWorldEntities);
 	}
-	//NMSHologram hologram;
+	NMSHologram hologram;
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (label.equals("spawnlaser")) {
 
-			/*
+
 			if (hologram != null) {
 				hologram.remove();
 			}
@@ -56,10 +57,9 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 			Location loc = pl.getLocation();
 			//loc.setPitch(0);
 			//loc.setYaw(0);
-			hologram = new HologramFactory().withLocation(loc).withHead(new ItemStack(Material.STONE),1).withHead(new ItemStack(Material.STONE),1).build();
-			hologram.setFrozen(false);
+			hologram = new HologramFactory().withLocation(loc).withHead(new ItemStack(Material.STONE),1).withBlock(new ItemStack(Material.STONE)).withLine("TEST").withItem(new ItemStack(Material.ACACIA_DOOR)).build();
 			pl.sendMessage("Hologram SPAWNED!");
-			*/
+
 		}
 		return false;
 

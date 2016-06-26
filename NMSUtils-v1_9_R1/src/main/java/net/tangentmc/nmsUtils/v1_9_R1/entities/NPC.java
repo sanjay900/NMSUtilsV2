@@ -30,8 +30,8 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_9_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
-import org.bukkit.entity.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -45,36 +45,33 @@ import java.util.stream.Stream;
  * @author DarkSeraphim.
  */
 @SuppressWarnings("rawtypes")
-public class NPC extends EntityPlayer{
-	public static class CraftNPC extends CraftPlayer implements net.tangentmc.nmsUtils.entities.NPC{
-		public CraftNPC(NPC entity) {
-			super((CraftServer) Bukkit.getServer(), entity);
-		}
-		@Override
-		public boolean teleport(Location loc, TeleportCause cause) {
-			entity.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-			return true;
-		}
+public class NPC extends EntityPlayer {
+    public static class CraftNPC extends CraftPlayer implements net.tangentmc.nmsUtils.entities.NPC {
+        public CraftNPC(NPC entity) {
+            super((CraftServer) Bukkit.getServer(), entity);
+        }
 
-		@Override
-		public void logout(Player pl) {
-			((NPC)entity).logout(pl);
-		}
+        @Override
+        public boolean teleport(Location loc, TeleportCause cause) {
+            entity.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+            return true;
+        }
 
-		@Override
-		public void spawn(Player pl) {
-			((NPC)entity).spawn(pl);
-		}
+        @Override
+        public void logout(Player pl) {
+            ((NPC) entity).logout(pl);
+        }
+
+        @Override
+        public void spawn(Player pl) {
+            ((NPC) entity).spawn(pl);
+        }
 
 
-		@Override
-		public void remove() {
-			Bukkit.getOnlinePlayers().forEach(this::logout);
-		}
-		@Override
-		public void setFrozen(boolean b) {
-			
-		}
+        @Override
+        public void remove() {
+            Bukkit.getOnlinePlayers().forEach(this::logout);
+        }
 
         @Override
         public void setCollides(boolean b) {
@@ -92,30 +89,37 @@ public class NPC extends EntityPlayer{
         }
 
         @Override
-		public boolean isFrozen() {
-			return false;
-		}
-
-        @Override
         public boolean willCollide() {
             return true;
         }
-		@Override
-		public boolean willSave() {
-			return false;
-		}
+
+        @Override
+        public void addEntityTag(String text) {
+
+        }
+
+        @Override
+        public boolean hasEntityTag(String text) {
+            return false;
+        }
+
+        @Override
+        public List<String> getTags() {
+            return null;
+        }
+
+        @Override
+        public boolean willSave() {
+            return false;
+        }
 
         @Override
         public Entity getEntity() {
             return this;
         }
 
-        @Override
-		public void spawn() {
-			
-		}
-		
-	}
+    }
+
     // Returns the Packets required to spawn a NPC in form of a List
     private static final Function<NPC, List<Packet>> getSpawnPackets = (npc) -> {
         if (npc.spawnPackets == null) {
@@ -185,10 +189,11 @@ public class NPC extends EntityPlayer{
             ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
         }
     }
+
     @Override
     public void setLocation(double x, double y, double z, float yaw, float pitch) {
-    	super.setLocation(x, y, z, yaw, pitch);
-    	Packet packet = new PacketPlayOutEntityTeleport(this);
+        super.setLocation(x, y, z, yaw, pitch);
+        Packet packet = new PacketPlayOutEntityTeleport(this);
         for (Player player : Bukkit.getOnlinePlayers()) {
             ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
         }
@@ -245,6 +250,7 @@ public class NPC extends EntityPlayer{
     public void despawn(Player player) {
         despawn(player, false);
     }
+
     /**
      * Despawns (hides) NPC for the given Player.
      *
@@ -253,6 +259,7 @@ public class NPC extends EntityPlayer{
     public void logout(Player player) {
         despawn(player, true);
     }
+
     /**
      * Despawns (hides) NPC for the given Player.
      * <p>
@@ -282,10 +289,12 @@ public class NPC extends EntityPlayer{
         PlayerConnection connection = getConnection(player);
         NPC.getDespawnPacket.apply(this).accept(connection);
     }
+
     @Override
     public CraftNPC getBukkitEntity() {
-    	return new CraftNPC(this);
+        return new CraftNPC(this);
     }
+
     /**
      * Auxiliary method which returns the distance^2 between
      * the Player and this NPC
@@ -300,10 +309,11 @@ public class NPC extends EntityPlayer{
         double dz = loc.getZ() - this.locZ;
         return dx * dx + dy * dy + dz * dz;
     }
+
     @Override
     public void m() {
-    	Collideable.testCollision(this);
-    	super.m();
+        Collideable.testCollision(this);
+        super.m();
     }
 
 }

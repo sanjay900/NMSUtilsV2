@@ -8,10 +8,16 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Directional;
 import org.bukkit.material.MaterialData;
 
 public class BlockUtil {
+	public static ItemStack getStackFromString(String bstr) {
+		final int bid = bstr.split(":").length > 1 ? Integer.parseInt(bstr.split(":")[0]) : Integer.parseInt(bstr);
+		final int bdata = bstr.split(":").length > 1 ? Integer.parseInt(bstr.split(":")[1]) : 0;
+		return new ItemStack(bid,1,(short)bdata);
+	}
 	public static boolean compareBlockToString(V10Block block, String blockData)
 	{
 	  return compareBlockToString(block.getHandle().getBlock(), blockData);

@@ -17,7 +17,6 @@ import net.tangentmc.nmsUtils.jinglenote.JingleNoteManager;
 import net.tangentmc.nmsUtils.jinglenote.MidiJingleSequencer;
 import net.tangentmc.nmsUtils.utils.Validator;
 import net.tangentmc.nmsUtils.v1_9_R2.entities.CraftHologramEntity;
-import net.tangentmc.nmsUtils.v1_9_R2.entities.LaserEntities;
 import net.tangentmc.nmsUtils.v1_9_R2.entities.NPC;
 import net.tangentmc.nmsUtils.v1_9_R2.entities.basic.BasicNMSArmorStand;
 import net.tangentmc.nmsUtils.v1_9_R2.entities.basic.BasicNMSEntity;
@@ -37,6 +36,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Minecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
@@ -48,22 +48,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
 
     private HashSet<UUID> riding = new HashSet<>();
     JingleNoteManager manager = new JingleNoteManager();
-    private static Table<Integer, Integer, List<NMSEntity>> customEntities = HashBasedTable.create();
+    private static Table<Integer, Integer, List<BasicNMSEntity>> customEntities = HashBasedTable.create();
     NPCManager npcmanager;
 
     @SneakyThrows
     public NMSUtilImpl() {
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketListener(this));
-        validateEntityMethod = net.minecraft.server.v1_9_R2.World.class.getDeclaredMethod("b", net.minecraft.server.v1_9_R2.Entity.class);
-        validateEntityMethod.setAccessible(true);
-        NMSEntityTypes.registerEntities();
         npcmanager = new NPCManager();
         Bukkit.getPluginManager().registerEvents(this, NMSUtils.getInstance());
         Bukkit.getWorlds().forEach(this::trackWorldEntities);
@@ -75,7 +71,7 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
     @Override
     public void trackWorldEntities(World w) {
         managers.put(w.getUID(), new WorldManager(w));
-        w.getEntities().stream().filter(e -> Objects.nonNull(e.getCustomName())).filter(e -> e.getCustomName().equals("deleteme")).forEach(Entity::remove);
+        w.getEntities().stream().filter(e -> !NMSEntity.wrap(e).willSave()).forEach(Entity::remove);
     }
 
     @Override
@@ -161,17 +157,14 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
 
     @Override
     public void stealPlayerControls(Location loc, Player who) {
-        ArmorStand as = (ArmorStand) loc.getWorld().spawnEntity(loc.add(0, -0.9875, 0), EntityType.ARMOR_STAND);
-        as.setVisible(false);
-        as.setSmall(true);
-        as.setPassenger(who);
-        this.riding.add(who.getUniqueId());
-    }
 
-    @Override
-    public NMSLaser spawnLaser(Location init) {
-        LaserEntities.CraftLaserEntity.LaserEntity laser = new LaserEntities.CraftLaserEntity.LaserEntity(((CraftWorld) init.getWorld()).getHandle(), init);
-        return laser.getBukkitEntity();
+        if (loc != null) {
+            ArmorStand as = (ArmorStand) loc.getWorld().spawnEntity(loc.add(0, -0.9875, 0), EntityType.ARMOR_STAND);
+            as.setVisible(false);
+            as.setSmall(true);
+            as.setPassenger(who);
+        }
+        this.riding.add(who.getUniqueId());
     }
 
     @Override
@@ -192,43 +185,6 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
             throws MidiUnavailableException, InvalidMidiDataException, IOException {
         MidiJingleSequencer seq = new MidiJingleSequencer(midi, repeat);
         manager.playNear(near, area, seq);
-    }
-
-    private static Method validateEntityMethod;
-
-    public static boolean addEntityToWorld(net.minecraft.server.v1_9_R2.World world, net.minecraft.server.v1_9_R2.Entity nmsEntity) {
-        Validator.isTrue(Bukkit.isPrimaryThread(), "Async entity add");
-
-        if (validateEntityMethod == null) {
-            return world.addEntity(nmsEntity, SpawnReason.CUSTOM);
-        }
-        final int chunkX = MathHelper.floor(nmsEntity.locX / 16.0);
-        final int chunkZ = MathHelper.floor(nmsEntity.locZ / 16.0);
-        //This function can be called to add entities that arent in loaded chunks. When that happenes,
-        //queue them for later.
-        if (!((WorldServer) world).getChunkProviderServer().isLoaded(chunkX, chunkZ)) {
-            if (nmsEntity.getBukkitEntity() instanceof NMSEntity) {
-                if (!customEntities.contains(chunkX, chunkZ)) customEntities.put(chunkX, chunkZ, new ArrayList<>());
-                customEntities.get(chunkX, chunkZ).add((NMSEntity) nmsEntity.getBukkitEntity());
-            }
-            return false;
-        }
-        if (((WorldServer) world).getEntity(nmsEntity.getUniqueID()) != null) return false;
-        if (((WorldServer) world).tracker.trackedEntities.b(nmsEntity.getId())) {
-            return false;
-        }
-        if (Arrays.asList(world.getChunkAt(chunkX, chunkZ).getEntitySlices()).contains(nmsEntity)) {
-            return false;
-        }
-        world.getChunkAt(chunkX, chunkZ).a(nmsEntity);
-        world.entityList.add(nmsEntity);
-        try {
-            validateEntityMethod.invoke(world, nmsEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 
     static Field b;
@@ -255,19 +211,6 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         } catch (IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
         }
-    }
-
-    @EventHandler
-    public void unloadChunk(ChunkUnloadEvent evt) {
-        Chunk c = evt.getChunk();
-        customEntities.put(c.getX(), c.getZ(), Arrays.stream(c.getEntities()).filter(en -> en instanceof NMSEntity).filter(en -> !en.isDead()).map(en -> (NMSEntity) en).filter(nms -> !nms.willSave()).collect(Collectors.toList()));
-    }
-
-    @Override
-    public void loadChunk(Chunk c) {
-        if (!customEntities.contains(c.getX(), c.getZ())) return;
-        customEntities.get(c.getX(), c.getZ()).forEach(NMSEntity::spawn);
-        customEntities.remove(c.getX(), c.getZ());
     }
 
     @Override
@@ -307,5 +250,19 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
                 }
             }
         }
+    }
+    public static boolean addEntityToWorld(WorldServer nmsWorld, net.minecraft.server.v1_9_R2.Entity nmsEntity) {
+        net.minecraft.server.v1_9_R2.Chunk nmsChunk = nmsWorld.getChunkAtWorldCoords(nmsEntity.getChunkCoordinates());
+
+        if (nmsChunk != null) {
+            Chunk chunk = nmsChunk.bukkitChunk;
+
+            if (!chunk.isLoaded()) {
+                chunk.load();
+                NMSUtils.getInstance().getLogger().info("Loaded chunk (x:" + chunk.getX() + " z:" + chunk.getZ() + ") to spawn a Hologram");
+            }
+        }
+
+        return nmsWorld.addEntity(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
     }
 }

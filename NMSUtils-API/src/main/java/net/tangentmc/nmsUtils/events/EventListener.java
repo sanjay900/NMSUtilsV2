@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import org.bukkit.util.Vector;
@@ -62,13 +63,18 @@ public class EventListener implements Listener {
 			if (b.getType()!= Material.AIR) {
 				EntityCollideWithBlockEvent evt = new EntityCollideWithBlockEvent(e, b, movement.setY(-0.1), BlockFace.DOWN);
 				Bukkit.getPluginManager().callEvent(evt);
-				return;
 			}
 		});
 	}
 	@EventHandler
 	public void chunkLoad(ChunkLoadEvent evt) {
-		util.getUtil().loadChunk(evt.getChunk());
+		//TODO: load all holograms
+
+	}
+	@EventHandler
+	public void chunkUnload(ChunkUnloadEvent evt) {
+		//TODO: load all holograms
+
 	}
 	@EventHandler
 	public void worldLoad(WorldLoadEvent evt) {

@@ -20,8 +20,6 @@ import net.tangentmc.nmsUtils.entities.HologramFactory.HologramObject;
 public interface NMSUtil {
 	void trackWorldEntities(World w);
 	void untrackWorldEntities(World w);
-	void loadChunk(Chunk c);
-	NMSLaser spawnLaser(Location init);
 	NMSHologram spawnHologram(Location loc, ArrayList<HologramObject> lines);
 	boolean teleportFast(Entity entity, Location location, org.bukkit.util.Vector velocity);
 

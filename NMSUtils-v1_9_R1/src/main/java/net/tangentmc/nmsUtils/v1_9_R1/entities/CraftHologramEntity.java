@@ -151,7 +151,7 @@ public class CraftHologramEntity extends CraftEntity {
             super(((CraftWorld)loc.getWorld()).getHandle());
             location = loc;
             lines.forEach(this::addLine);
-            NMSUtilImpl.addEntityToWorld(world, this);
+            NMSUtilImpl.addEntityToWorld((WorldServer)world,this);
         }
 
         public List<org.bukkit.entity.Entity> getLines() {
@@ -382,7 +382,8 @@ public class CraftHologramEntity extends CraftEntity {
             }
             @Override
             public void addToWorld() {
-                NMSUtilImpl.addEntityToWorld(world, this);
+
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,this);
             }
         }
 
@@ -412,7 +413,7 @@ public class CraftHologramEntity extends CraftEntity {
                 item.ticksLived = 1;
                 item.pickupDelay = 10;
                 this.getBukkitEntity().setPassenger(item.getBukkitEntity());
-                NMSUtilImpl.addEntityToWorld(world, item);
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,item);
             }
 
             @Override
@@ -496,8 +497,8 @@ public class CraftHologramEntity extends CraftEntity {
 
             @Override
             public void addToWorld() {
-                NMSUtilImpl.addEntityToWorld(world, this);
-                NMSUtilImpl.addEntityToWorld(world, item);
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,this);
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,item);
             }
         }
         public static class BlockHologramEntity extends EntityArmorStand implements HologramPart {
@@ -524,7 +525,7 @@ public class CraftHologramEntity extends CraftEntity {
                 block = new HologramBlock(world,this.getBukkitEntity().getLocation(),(ItemStack) obj.getObject(),this);
                 block.ticksLived = 1;
                 this.getBukkitEntity().setPassenger(block.getBukkitEntity());
-                NMSUtilImpl.addEntityToWorld(world, block);
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,block);
             }
 
             @Override
@@ -607,22 +608,20 @@ public class CraftHologramEntity extends CraftEntity {
 
             @Override
             public void addToWorld() {
-                NMSUtilImpl.addEntityToWorld(world, this);
-                NMSUtilImpl.addEntityToWorld(world, block);
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,this);
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,block);
             }
 
         }
         @ToString
         public static class HeadHologramEntity extends EntityArmorStand implements HologramPart {
             HologramEntity parent;
-            boolean teleporting;
             @Getter
             double height = 1;
             public HeadHologramEntity(World world, Location loc, ItemStack stack, double height, HologramEntity parent) {
                 super(world);
                 this.height = height;
                 this.parent = parent;
-                this.getBukkitEntity().setMetadata("instrumented",new FixedMetadataValue(NMSUtils.getInstance(),true));
                 this.setPositionRotation(loc.getX(), loc.getY(), loc.getZ(),loc.getYaw(),loc.getPitch());
                 CraftArmorStand en =  new CraftArmorStand(world.getServer(),this);
                 en.setHelmet(stack);
@@ -690,7 +689,8 @@ public class CraftHologramEntity extends CraftEntity {
 
             @Override
             public void addToWorld() {
-                NMSUtilImpl.addEntityToWorld(world, this);
+
+                NMSUtilImpl.addEntityToWorld((WorldServer)world,this);
             }
         }
 

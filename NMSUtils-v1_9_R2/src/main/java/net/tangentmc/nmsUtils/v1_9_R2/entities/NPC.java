@@ -71,10 +71,6 @@ public class NPC extends EntityPlayer {
 		public void remove() {
 			Bukkit.getOnlinePlayers().forEach(this::logout);
 		}
-		@Override
-		public void setFrozen(boolean b) {
-			
-		}
 
         @Override
         public void setCollides(boolean b) {
@@ -92,15 +88,26 @@ public class NPC extends EntityPlayer {
         }
 
         @Override
-		public boolean isFrozen() {
-			return false;
-		}
-
-        @Override
         public boolean willCollide() {
             return true;
         }
-		@Override
+
+        @Override
+        public void addEntityTag(String text) {
+
+        }
+
+        @Override
+        public boolean hasEntityTag(String text) {
+            return false;
+        }
+
+        @Override
+        public List<String> getTags() {
+            return null;
+        }
+
+        @Override
 		public boolean willSave() {
 			return false;
 		}
@@ -109,11 +116,6 @@ public class NPC extends EntityPlayer {
         public Entity getEntity() {
             return this;
         }
-
-        @Override
-		public void spawn() {
-			
-		}
 		
 	}
     // Returns the Packets required to spawn a NPC in form of a List
