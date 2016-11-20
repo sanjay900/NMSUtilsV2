@@ -70,16 +70,6 @@ public class EventListener implements Listener {
 
 	}
 	@EventHandler
-	public void chunkLoad(ChunkLoadEvent evt) {
-		//TODO: load all holograms
-
-	}
-	@EventHandler
-	public void chunkUnload(ChunkUnloadEvent evt) {
-		//TODO: load all holograms
-
-	}
-	@EventHandler
 	public void worldLoad(WorldLoadEvent evt) {
 		util.getUtil().trackWorldEntities(evt.getWorld());
 	}

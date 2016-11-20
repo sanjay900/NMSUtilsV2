@@ -66,9 +66,9 @@ public class Utils {
 	/**
 	 * Removes a item from a inventory
 	 * 
-	 * @param inventory
+	 * @param inv
 	 *            The inventory to remove from.
-	 * @param mat
+	 * @param type
 	 *            The material to remove .
 	 * @param amount
 	 *            The amount to remove.

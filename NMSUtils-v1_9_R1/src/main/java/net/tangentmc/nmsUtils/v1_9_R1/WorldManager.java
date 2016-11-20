@@ -1,50 +1,21 @@
 package net.tangentmc.nmsUtils.v1_9_R1;
 
-import lombok.SneakyThrows;
 import net.minecraft.server.v1_9_R1.*;
 import net.tangentmc.nmsUtils.events.EntityDespawnEvent;
 import net.tangentmc.nmsUtils.events.EntitySpawnEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_9_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
 
-import java.lang.reflect.Field;
 import java.util.HashSet;
-import java.util.List;
 
-public class WorldManager implements IWorldAccess {
-    private HashSet<EntityHuman> players = new HashSet<EntityHuman>();
-    private static Field f;
-    private static Field f2;
-    private WorldServer world;
+class WorldManager implements IWorldAccess {
+    private HashSet<EntityHuman> players = new HashSet<>();
 
-    @SuppressWarnings("unchecked")
-    @SneakyThrows
-    public WorldManager(org.bukkit.World world) {
-        this.world = ((CraftWorld) world).getHandle();
-        this.world.addIWorldAccess(this);
+    WorldManager(org.bukkit.World world) {
+        ((CraftWorld) world).getHandle().addIWorldAccess(this);
     }
 
-    private static Field worlds;
-
-    static {
-        try {
-            f = World.class.getDeclaredField("u");
-            f2 = World.class.getDeclaredField("world");
-            worlds = CraftServer.class.getDeclaredField("worlds");
-        } catch (NoSuchFieldException | SecurityException e) {
-            e.printStackTrace();
-        }
-        worlds.setAccessible(true);
-        f.setAccessible(true);
-        f2.setAccessible(true);
-    }
-
-    @SneakyThrows
-    public void remove() {
-        List<?> l = (List<?>) f.get(world);
-        l.remove(this);
-        f.set(world, l);
+    void remove() {
         this.players.clear();
     }
 

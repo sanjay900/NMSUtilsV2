@@ -4,18 +4,19 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import lombok.Getter;
-import lombok.SneakyThrows;
-import net.minecraft.server.v1_9_R1.*;
+import net.minecraft.server.v1_9_R1.NBTTagCompound;
+import net.minecraft.server.v1_9_R1.WorldServer;
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
-import net.tangentmc.nmsUtils.entities.*;
+import net.tangentmc.nmsUtils.entities.HologramFactory;
+import net.tangentmc.nmsUtils.entities.NMSEntity;
+import net.tangentmc.nmsUtils.entities.NMSHologram;
+import net.tangentmc.nmsUtils.entities.NPCManager;
 import net.tangentmc.nmsUtils.events.EntityMoveEvent;
 import net.tangentmc.nmsUtils.jinglenote.JingleNoteManager;
 import net.tangentmc.nmsUtils.jinglenote.MidiJingleSequencer;
-import net.tangentmc.nmsUtils.utils.Validator;
 import net.tangentmc.nmsUtils.v1_9_R1.entities.CraftHologramEntity;
 import net.tangentmc.nmsUtils.v1_9_R1.entities.NPC;
 import net.tangentmc.nmsUtils.v1_9_R1.entities.basic.BasicNMSArmorStand;
@@ -33,19 +34,14 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.world.ChunkUnloadEvent;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,7 +53,6 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
     private static Table<Integer, Integer, List<NMSEntity>> customEntities = HashBasedTable.create();
     NPCManager npcmanager;
 
-    @SneakyThrows
     public NMSUtilImpl() {
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketListener(this));
         npcmanager = new NPCManager();
@@ -79,16 +74,16 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         managers.get(w.getUID()).remove();
     }
 
-    public net.minecraft.server.v1_9_R1.World getWorld(World w) {
+    private net.minecraft.server.v1_9_R1.World getWorld(World w) {
         return ((CraftWorld) w).getHandle();
     }
 
 
-    public List<Integer> getEntityRemoveQueue(Player entity) {
+    private List<Integer> getEntityRemoveQueue(Player entity) {
         return ((CraftPlayer) entity).getHandle().removeQueue;
     }
 
-    public void flushEntityRemoveQueue(Player pl) {
+    private void flushEntityRemoveQueue(Player pl) {
         final List<Integer> ids = getEntityRemoveQueue(pl);
         if (ids.isEmpty()) {
             return;
@@ -173,31 +168,6 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         manager.playNear(near, area, seq);
     }
 
-    static Field b;
-    static Field c;
-
-    static {
-        try {
-            b = PathfinderGoalSelector.class.getDeclaredField("b");
-            b.setAccessible(true);
-            c = PathfinderGoalSelector.class.getDeclaredField("c");
-            c.setAccessible(true);
-        } catch (SecurityException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void clearSelectors(EntityInsentient entity) {
-        try {
-            b.set(entity.targetSelector, Sets.newLinkedHashSet());
-            c.set(entity.targetSelector, Sets.newLinkedHashSet());
-            b.set(entity.goalSelector, Sets.newLinkedHashSet());
-            c.set(entity.goalSelector, Sets.newLinkedHashSet());
-
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
     @Override
     public net.tangentmc.nmsUtils.entities.NPC spawnNPC(String name, Location location, String value, String signature) {
         NPC npc = NPC.createNPC(NMSUtils.getInstance(), name, location, value, signature);
@@ -250,5 +220,10 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         }
 
         return nmsWorld.addEntity(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
+    }
+
+    @Override
+    public List<Player> getStolenControls() {
+        return riding.stream().map(Bukkit::getPlayer).collect(Collectors.toList());
     }
 }
