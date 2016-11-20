@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.bukkit.util.Vector;
 
 /**
  * This event is called when an armorstand collides with another entity
@@ -29,6 +30,13 @@ public class EntityCollideWithEntityEvent extends Event {
 	private Entity collider;
 	@Setter
 	private boolean willCollide = false;
+    /**
+     * The velocity of the entity that initiated the collision
+     */
+    private Vector velocity = null;
+    public Vector getVelocity() {
+        return  velocity==null?collider.getVelocity():velocity;
+    }
 	public static HandlerList getHandlerList() {      
 		return handlers;  
 	}

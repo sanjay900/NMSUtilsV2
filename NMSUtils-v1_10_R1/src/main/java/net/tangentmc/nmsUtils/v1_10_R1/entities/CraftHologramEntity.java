@@ -135,7 +135,7 @@ public class CraftHologramEntity extends CraftEntity {
                 } else if (isHead) {
                     //Armorstand placement.
                     if (l.getY()+0.5< minY) minY = l.getY()+0.5;
-                    if (l.getY()+line.getHeight()> maxY) maxY = l.getY()+line.getHeight();
+                    if (l.getY()+0.5+line.getHeight()> maxY) maxY = l.getY()+0.5+line.getHeight();
                 } else {
                     if (l.getY()< minY) minY = l.getY();
                     if (l.getY()+0.23> maxY) maxY = l.getY()+0.23;
@@ -324,6 +324,7 @@ public class CraftHologramEntity extends CraftEntity {
 
             public TextHologramEntity(World world, Location loc, Object object, int line, HologramEntity parent) {
                 super(world);
+                this.setSilent(true);
                 this.line = line;
                 this.parent = parent;
                 if (object instanceof String) {
@@ -667,6 +668,7 @@ public class CraftHologramEntity extends CraftEntity {
                 this.setSmall(true);
                 this.setSize((float)height, (float)height);
                 this.addToWorld();
+                this.setSilent(true);
 
             }
 

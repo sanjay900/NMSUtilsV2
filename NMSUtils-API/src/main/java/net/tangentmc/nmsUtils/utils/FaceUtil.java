@@ -11,9 +11,7 @@ public class FaceUtil {
 	public static final BlockFace[] AXIS = new BlockFace[4];
 	public static final BlockFace[] RADIAL = {BlockFace.WEST, BlockFace.NORTH_WEST, BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST};
 	public static final BlockFace[] BLOCK_SIDES = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN};
-	public static final BlockFace[] ATTACHEDFACES = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP};
-	public static final BlockFace[] ATTACHEDFACESDOWN = BLOCK_SIDES;
-	private static final EnumMap<BlockFace, Integer> notches = new EnumMap<BlockFace, Integer>(BlockFace.class);
+	private static final EnumMap<BlockFace, Integer> notches = new EnumMap<>(BlockFace.class);
 
 	static {
 		for (int i = 0; i < RADIAL.length; i++) {
@@ -33,7 +31,7 @@ public class FaceUtil {
 	 */
 	public static int faceToNotch(BlockFace face) {
 		Integer notch = notches.get(face);
-		return notch == null ? 0 : notch.intValue();
+		return notch == null ? 0 : notch;
 	}
 
 	/**
@@ -129,9 +127,9 @@ public class FaceUtil {
 	/**
 	 * Subtracts two faces
 	 * 
-	 * @param face1
-	 * @param face2 to subtract from face1
-	 * @return Block Face result ofthe subtraction
+	 * @param face1 the first face
+	 * @param face2 face to subtract from face1
+	 * @return Block Face result of the subtraction
 	 */
 	public static BlockFace subtract(BlockFace face1, BlockFace face2) {
 		return notchToFace(faceToNotch(face1) - faceToNotch(face2));
@@ -140,8 +138,8 @@ public class FaceUtil {
 	/**
 	 * Adds two faces together
 	 * 
-	 * @param face1
-	 * @param face2 to add to face1
+	 * @param face1 the first face
+	 * @param face2 face to add to face1
 	 * @return Block Face result of the addition
 	 */
 	public static BlockFace add(BlockFace face1, BlockFace face2) {

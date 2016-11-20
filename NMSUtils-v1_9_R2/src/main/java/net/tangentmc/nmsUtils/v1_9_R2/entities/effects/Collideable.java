@@ -25,7 +25,7 @@ public class Collideable {
 		list.removeAll(ignore);
 		list.remove(en);
 		for (Entity entity1 : list) {
-			EntityCollideWithEntityEvent ev = new EntityCollideWithEntityEvent(e, entity1.getBukkitEntity(), false);
+			EntityCollideWithEntityEvent ev = new EntityCollideWithEntityEvent(e, entity1.getBukkitEntity(), false, null);
 			Bukkit.getPluginManager().callEvent(ev);
 			if (ev.isWillCollide()) {
 				entity1.collide(en);

@@ -12,6 +12,7 @@
 		<module>NMSUtils-plugin</module>
         <module>SpigotMCRunner</module>
 		<module>NMSUtils-v1_10_R1</module>
+		<module>NMSUtils-v1_11_R1</module>
 	</modules>
 
 	<repositories>
@@ -20,9 +21,13 @@
 			<url>http://repo.dmulloy2.net/content/groups/public/</url>
 		</repository>
 		<repository>
-			<url>http://socketio.tangentmc.net:8081/repository/tangent/</url>
+			<url>http://maven.tangentmc.net/repository/tangent/</url>
 			<id>tangentmc</id>
 		</repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -73,4 +78,9 @@
             <url>https://maven.tangentmc.net/repository/tangent/</url>
         </repository>
     </distributionManagement>
+
+	<properties>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+	</properties>
 </project>

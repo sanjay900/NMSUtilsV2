@@ -8,7 +8,6 @@
     </JAVADOC>
     <SOURCES>
       <root url="jar://$MAVEN_REPOSITORY$/net/tangentmc/PortalStickNew/0.0.1-SNAPSHOT/PortalStickNew-0.0.1-SNAPSHOT-sources.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/net/tangentmc/PortalStickNew/0.0.1-SNAPSHOT/PortalStickNew-0.0.1-SNAPSHOT.jar!/" />
     </SOURCES>
   </library>
 </component>

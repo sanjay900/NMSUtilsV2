@@ -20,7 +20,7 @@ public class BasicNMSArmorStand extends BasicNMSEntity implements NMSArmorStand 
     }
     public void lock() {
         NBTTagCompound tag = NMSUtilImpl.getTag(((CraftEntity) en).getHandle());
-        tag.setInt("DisabledSlots", 2039583);
+        tag.setInt("DisablaedSlots", 2039583);
         ((EntityArmorStand) ((CraftEntity) en).getHandle()).a(tag);
     }
 
