@@ -7,7 +7,7 @@
       <root url="jar://$MAVEN_REPOSITORY$/net/tangentmc/PortalStickNew/0.0.1-SNAPSHOT/PortalStickNew-0.0.1-SNAPSHOT-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/net/tangentmc/PortalStickNew/0.0.1-SNAPSHOT/PortalStickNew-0.0.1-SNAPSHOT-sources.jar!/" />
+      <root url="file://$PROJECT_DIR$/../PortalStickNew/src/main/java" />
     </SOURCES>
   </library>
 </component>
