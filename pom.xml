@@ -20,7 +20,7 @@
 			<url>http://repo.dmulloy2.net/content/groups/public/</url>
 		</repository>
 		<repository>
-			<url>http://maven.tangentmc.net/repository/tangent/</url>
+			<url>https://maven.tangentmc.net/repository/tangent/</url>
 			<id>tangentmc</id>
 		</repository>
         <repository>
