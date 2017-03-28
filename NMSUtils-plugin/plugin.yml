@@ -1,0 +1,5 @@
+name: NMSUtils
+main: net.tangentmc.nmsutils.NMSUtils
+version: ${project.version}
+authors: [matejdro, oliverw92, V10lator, sanjay900]
+depend: [ProtocolLib]
