@@ -1,0 +1,35 @@
+allprojects  {
+  apply plugin: 'maven'
+
+  group = 'net.tangentmc'
+version = '2.0.2-SNAPSHOT'
+}
+
+subprojects {
+  apply plugin: 'java'
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+
+  
+  repositories {
+    mavenLocal()
+    
+    maven { url "http://repo.dmulloy2.net/content/groups/public/" }
+    maven { url "https://maven.tangentmc.net/repository/tangent/" }
+    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+    maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "http://repo.dmulloy2.net/content/groups/public" }
+  }
+
+  
+  dependencies {
+    compile group: 'net.jodah', name: 'expiringmap', version:'0.5.1'
+    compileOnly "org.projectlombok:lombok:1.16.16"
+    compileOnly(group: 'com.comphenix.protocol', name: 'ProtocolLib', version:'4.0.0-SNAPSHOT') {
+      exclude(module: 'spigot')
+      exclude(module: 'spigot-api')
+    }
+}
+
+  
+}

@@ -1,0 +1,17 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+description = ''
+dependencies {
+  compile project(':NMSUtils-API')
+  compile project(':NMSUtils-v1_11_R1')
+  compile project(':NMSUtils-v1_10_R1')
+  compile project(':NMSUtils-v1_9_R2')
+  compile project(':NMSUtils-v1_9_R1')
+}
+
+shadowJar {
+  baseName = 'NMSUtils'
+  classifier = null
+  destinationDir = new File("")
+}

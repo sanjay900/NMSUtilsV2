@@ -1,0 +1,6 @@
+
+description = ''
+dependencies {
+  compile project(':NMSUtils-API')
+  compileOnly(group: 'org.spigotmc', name: 'spigot', version:'1.9.4-R0.1-SNAPSHOT')
+}
