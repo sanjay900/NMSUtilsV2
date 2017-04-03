@@ -20,18 +20,7 @@ hs_err_pid*
 NMSUtils-API/.classpath
 NMSUtils-API/.project
 NMSUtils-API/.settings/
-NMSUtils-API/src/test/
-NMSUtils-API/target/
 NMSUtils-plugin/.settings/
-NMSUtils-plugin/src/
-NMSUtils-plugin/target/
-NMSUtils-v1_11_R1/target/
-NMSUtils-v1_10_R1/target/
-NMSUtils-v1_9_R1/.settings/
-NMSUtils-v1_9_R1/target/
-NMSUtils-v1_9_R2/target/
-SpigotMCRunner/src/
-SpigotMCRunner/target/
 pom.xml~
 /SpigotMCRunner/
 ### JetBrains template
