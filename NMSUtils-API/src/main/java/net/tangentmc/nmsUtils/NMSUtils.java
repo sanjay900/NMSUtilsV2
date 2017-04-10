@@ -59,12 +59,14 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 	    if (label.equals("uploadzip")) {
-            try {
-            	resourcePackAPI.uploadZIP();
-                resourcePackAPI.updatePacks();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Bukkit.getScheduler().runTaskAsynchronously(this,()->{
+				try {
+					resourcePackAPI.uploadZIP();
+					resourcePackAPI.updatePacks();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
         }
         if (label.equals("setblock")) {
 			if (sender instanceof Player) {
