@@ -17,7 +17,7 @@ hs_err_pid*
 /NMSUtils-plugin/server/
 .idea/libraries/Maven__org_spigotmc_spigot_api_1_9_4_R0_1_SNAPSHOT.xml
 .idea/workspace.xml
-build
+**/build
 .settings/
 NMSUtils-API/.classpath
 NMSUtils-API/.project
