@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.Dropbox;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.FTP;
@@ -35,42 +36,42 @@ import java.util.zip.ZipOutputStream;
 public class ResourcePackAPI {
     private static JSONObject blockDisplay = new JSONObject(
             "{"+
-            "        \"head\": { "+
-            "            \"rotation\": [ -30, 0, 0 ], " +
-            "            \"translation\": [ 0, -30.75, -7.25 ], " +
-            "            \"scale\": [ 3.0125, 3.0125, 3.0125 ]" +
-            "        },"+
-            "        \"gui\": {"+
-            "            \"rotation\": [ 30, 225, 0 ],"+
-            "            \"translation\": [ 0, 0, 0],"+
-            "            \"scale\":[ 0.625, 0.625, 0.625 ]"+
-            "        },"+
-            "        \"ground\": {"+
-            "            \"rotation\": [ 0, 0, 0 ],"+
-            "            \"translation\": [ 0, 3, 0],"+
-            "            \"scale\":[ 0.25, 0.25, 0.25 ]"+
-            "        },"+
-            "        \"fixed\": {"+
-            "            \"rotation\": [ 0, 0, 0 ],"+
-            "            \"translation\": [ 0, 0, 0],"+
-            "            \"scale\":[ 0.5, 0.5, 0.5 ]"+
-            "        },"+
-            "        \"thirdperson_righthand\": {"+
-            "            \"rotation\": [ 75, 45, 0 ],"+
-            "            \"translation\": [ 0, 2.5, 0],"+
-            "            \"scale\": [ 0.375, 0.375, 0.375 ]"+
-            "        },"+
-            "        \"firstperson_righthand\": {"+
-            "            \"rotation\": [ 0, 45, 0 ],"+
-            "            \"translation\": [ 0, 0, 0 ],"+
-            "            \"scale\": [ 0.40, 0.40, 0.40 ]"+
-            "        },"+
-            "        \"firstperson_lefthand\": {"+
-            "            \"rotation\": [ 0, 225, 0 ],"+
-            "            \"translation\": [ 0, 0, 0 ],"+
-            "            \"scale\": [ 0.40, 0.40, 0.40 ]"+
-            "        }"+
-            "}");
+                    "        \"head\": { "+
+                    "            \"rotation\": [ -30, 0, 0 ], " +
+                    "            \"translation\": [ 0, -30.75, -7.25 ], " +
+                    "            \"scale\": [ 3.0125, 3.0125, 3.0125 ]" +
+                    "        },"+
+                    "        \"gui\": {"+
+                    "            \"rotation\": [ 30, 225, 0 ],"+
+                    "            \"translation\": [ 0, 0, 0],"+
+                    "            \"scale\":[ 0.625, 0.625, 0.625 ]"+
+                    "        },"+
+                    "        \"ground\": {"+
+                    "            \"rotation\": [ 0, 0, 0 ],"+
+                    "            \"translation\": [ 0, 3, 0],"+
+                    "            \"scale\":[ 0.25, 0.25, 0.25 ]"+
+                    "        },"+
+                    "        \"fixed\": {"+
+                    "            \"rotation\": [ 0, 0, 0 ],"+
+                    "            \"translation\": [ 0, 0, 0],"+
+                    "            \"scale\":[ 0.5, 0.5, 0.5 ]"+
+                    "        },"+
+                    "        \"thirdperson_righthand\": {"+
+                    "            \"rotation\": [ 75, 45, 0 ],"+
+                    "            \"translation\": [ 0, 2.5, 0],"+
+                    "            \"scale\": [ 0.375, 0.375, 0.375 ]"+
+                    "        },"+
+                    "        \"firstperson_righthand\": {"+
+                    "            \"rotation\": [ 0, 45, 0 ],"+
+                    "            \"translation\": [ 0, 0, 0 ],"+
+                    "            \"scale\": [ 0.40, 0.40, 0.40 ]"+
+                    "        },"+
+                    "        \"firstperson_lefthand\": {"+
+                    "            \"rotation\": [ 0, 225, 0 ],"+
+                    "            \"translation\": [ 0, 0, 0 ],"+
+                    "            \"scale\": [ 0.40, 0.40, 0.40 ]"+
+                    "        }"+
+                    "}");
     private BiMap<String,Short> mapping = HashBiMap.create();
     private List<ResourcePackHandler> handlerList = new ArrayList<>();
     //Start at key 1, damage 0 is dedicated to the default hoe.
@@ -125,9 +126,9 @@ public class ResourcePackAPI {
         Block b = l.getBlock();
         b.setType(Material.MOB_SPAWNER);
         try {
-            NMSUtils.getInstance().getUtil().updateBlockNBT(b,String.format("{RequiredPlayerRange:0s," +
+            NMSUtils.getInstance().getUtil().updateBlockNBT(b, String.format("{RequiredPlayerRange:0s," +
                     "SpawnData:{id:\"minecraft:armor_stand\",Invisible:1,Marker:1," +
-                    "ArmorItems:[0:{},1:{},2:{},3:{id:\"minecraft:diamond_hoe\",Count:1b,Damage:%ds,tag:{Unbreakable:1}}]}}",id));
+                    "ArmorItems:[0:{},1:{},2:{},3:{id:\"minecraft:diamond_hoe\",Count:1b,Damage:%ds,tag:{Unbreakable:1}}]}}", id));
         } catch (MCException e) {
             e.printStackTrace();
         }
