@@ -1,14 +1,19 @@
 package net.tangentmc.nmsUtils.utils;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.UUID;
 
+import net.tangentmc.nmsUtils.NMSUtil;
+import net.tangentmc.nmsUtils.NMSUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -238,5 +243,24 @@ public class Utils {
 			searchAmount += item.getAmount();
 		}
 		return searchAmount - amount;
+	}
+
+	public static FileConfiguration getConfig(File file) {
+		FileConfiguration config;
+		try {
+			config = new YamlConfiguration();
+			if (file.exists())
+			{
+				config.load(file);
+				config.set("setup", null);
+			}
+			config.save(file);
+
+			return config;
+		} catch (Exception e) {
+			NMSUtils.getInstance().getLogger().severe("Unable to load YAML file " + file.getAbsolutePath());
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

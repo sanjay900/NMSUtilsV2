@@ -1,6 +1,7 @@
 package net.tangentmc.nmsUtils;
 
 import net.tangentmc.nmsUtils.entities.NMSHologram;
+import net.tangentmc.nmsUtils.resourcepacks.ResourcePackAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,6 +20,9 @@ import net.tangentmc.nmsUtils.events.EventListener;
 import net.tangentmc.nmsUtils.imagemap.ImageMaps;
 import net.tangentmc.nmsUtils.utils.CommandBuilder;
 import net.tangentmc.nmsUtils.utils.ReflectionManager;
+
+import java.io.File;
+
 @Getter
 public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	@Getter
@@ -27,17 +31,22 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	private NMSUtil util;
 	private ImageMaps map;
 	private EventListener listener;
+	@Getter
+	private ResourcePackAPI resourcePackAPI;
 	@Override
 	public void onEnable() {
 		instance = this;
+		createConfig();
 		if (!ReflectionManager.load()) {
 			Bukkit.getPluginManager().disablePlugin(this);
 		}
 		Bukkit.getPluginManager().registerEvents(this, this);
 		Bukkit.getWorlds().forEach(util::trackWorldEntities);
 		new CommandBuilder("spawnlaser").withCommandExecutor(this).build();
+        new CommandBuilder("uploadZip").withCommandExecutor(this).build();
 		listener= new EventListener();
 		map = new ImageMaps();
+		resourcePackAPI = new ResourcePackAPI(false);
 
 	}
 	@Override
@@ -47,6 +56,14 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	NMSHologram hologram;
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+	    if (label.equals("uploadzip")) {
+	        String zip = args[0];
+            try {
+                resourcePackAPI.uploadZipFile(zip);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 		if (label.equals("spawnlaser")) {
 
 
@@ -62,6 +79,24 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 
 		}
 		return false;
+
+	}
+	private void createConfig() {
+		try {
+			if (!getDataFolder().exists()) {
+				getDataFolder().mkdirs();
+			}
+			File file = new File(getDataFolder(), "config.yml");
+			if (!file.exists()) {
+				getLogger().info("Config.yml not found, creating!");
+				saveDefaultConfig();
+			} else {
+				getLogger().info("Config.yml found, loading!");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		}
 
 	}
 }

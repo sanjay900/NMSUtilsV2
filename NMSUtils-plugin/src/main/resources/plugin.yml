@@ -1,0 +1,6 @@
+name: nmsUtils
+main: net.tangentmc.nmsUtils.NMSUtils
+load: STARTUP
+version: @version@
+authors: [sanjay900]
+depend: [ProtocolLib]

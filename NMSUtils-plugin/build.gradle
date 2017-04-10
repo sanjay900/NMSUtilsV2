@@ -15,6 +15,7 @@ shadowJar {
     baseName = 'NMSUtils'
     classifier = null
     destinationDir = new File(".")
+    relocate 'com.dropbox.core', 'net.tangentmc.com.dropbox.core'
 }
 task updateVersion(type: Copy) {
     from 'src/main/resources/'
