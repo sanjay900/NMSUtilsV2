@@ -1,4 +1,8 @@
-
+repositories {
+    maven {
+        url "https://repo.inventivetalent.org/content/groups/public/"
+    }
+}
 description = ''
 dependencies {
     compileOnly(group: 'org.spigotmc', name: 'spigot-api', version: '1.11-R0.1-SNAPSHOT')

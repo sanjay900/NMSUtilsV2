@@ -43,10 +43,12 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 		Bukkit.getPluginManager().registerEvents(this, this);
 		Bukkit.getWorlds().forEach(util::trackWorldEntities);
 		new CommandBuilder("spawnlaser").withCommandExecutor(this).build();
+		new CommandBuilder("getItem").withCommandExecutor(this).build();
         new CommandBuilder("uploadZip").withCommandExecutor(this).build();
+		new CommandBuilder("setBlock").withCommandExecutor(this).build();
 		listener= new EventListener();
 		map = new ImageMaps();
-		resourcePackAPI = new ResourcePackAPI(false);
+		resourcePackAPI = new ResourcePackAPI();
 
 	}
 	@Override
@@ -57,13 +59,23 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 	    if (label.equals("uploadzip")) {
-	        String zip = args[0];
             try {
-                resourcePackAPI.uploadZipFile(zip);
+            	resourcePackAPI.uploadZIP();
+                resourcePackAPI.updatePacks();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        if (label.equals("setblock")) {
+			if (sender instanceof Player) {
+				resourcePackAPI.setBlock(((Player) sender).getLocation(),args[0]);
+			}
+		}
+		if (label.equals("getitem")) {
+			if (sender instanceof Player) {
+				((Player) sender).getInventory().addItem(resourcePackAPI.getItemStack(args[0]));
+			}
+		}
 		if (label.equals("spawnlaser")) {
 
 

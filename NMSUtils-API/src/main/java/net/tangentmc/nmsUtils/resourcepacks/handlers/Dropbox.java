@@ -37,7 +37,7 @@ public class Dropbox extends ResourcePackHandler {
                 .withMode(WriteMode.OVERWRITE)
                 .uploadAndFinish(new ByteArrayInputStream(zip));
         url = getDropBoxClient().sharing().createSharedLinkWithSettings(fileName).getUrl()+DOWNLOAD_OPTION;
-        NMSUtils.getInstance().getConfig().set("resourcepackapi.dropbox.url",this.url);
+        NMSUtils.getInstance().getConfig().set("resourcepackapi.dropbox.uploaded_url",this.url);
         NMSUtils.getInstance().saveConfig();
     }
 

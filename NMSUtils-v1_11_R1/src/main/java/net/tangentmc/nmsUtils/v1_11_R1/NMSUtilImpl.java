@@ -5,10 +5,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import net.minecraft.server.v1_11_R1.EntityTracker;
-import net.minecraft.server.v1_11_R1.EntityTrackerEntry;
-import net.minecraft.server.v1_11_R1.NBTTagCompound;
-import net.minecraft.server.v1_11_R1.WorldServer;
+import net.minecraft.server.v1_11_R1.*;
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.entities.HologramFactory;
@@ -18,6 +15,7 @@ import net.tangentmc.nmsUtils.entities.NPCManager;
 import net.tangentmc.nmsUtils.events.EntityMoveEvent;
 import net.tangentmc.nmsUtils.jinglenote.JingleNoteManager;
 import net.tangentmc.nmsUtils.jinglenote.MidiJingleSequencer;
+import net.tangentmc.nmsUtils.utils.MCException;
 import net.tangentmc.nmsUtils.v1_11_R1.entities.CraftHologramEntity;
 import net.tangentmc.nmsUtils.v1_11_R1.entities.NPC;
 import net.tangentmc.nmsUtils.v1_11_R1.entities.basic.BasicNMSArmorStand;
@@ -28,10 +26,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_11_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
@@ -205,6 +205,36 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
             return new BasicNMSArmorStand(en2);
         } else {
             return new BasicNMSEntity(en2);
+        }
+    }
+
+    @Override
+    public void updateBlockNBT(Block b, String json) throws MCException {
+
+        TileEntity tileentity = getWorld(b.getWorld()).getWorld().getTileEntityAt(b.getX(),b.getY(),b.getZ());
+        BlockPosition blockposition = new BlockPosition(b.getX(),b.getY(),b.getZ());
+        IBlockData iblockdata = getWorld(b.getWorld()).getType(blockposition);
+        NBTTagCompound nbttagcompound = tileentity.save(new NBTTagCompound());
+        NBTTagCompound nbttagcompound1 = nbttagcompound.g();
+
+        NBTTagCompound nbttagcompound2;
+
+        try {
+            nbttagcompound2 = MojangsonParser.parse(json);
+        } catch (MojangsonParseException mojangsonparseexception) {
+            throw new MCException("commands.blockdata.tagError", mojangsonparseexception);
+        }
+
+        nbttagcompound.a(nbttagcompound2);
+        nbttagcompound.setInt("x", blockposition.getX());
+        nbttagcompound.setInt("y", blockposition.getY());
+        nbttagcompound.setInt("z", blockposition.getZ());
+        if (nbttagcompound.equals(nbttagcompound1)) {
+            throw new MCException("commands.blockdata.failed", null);
+        } else {
+            tileentity.a(nbttagcompound);
+            tileentity.update();
+            getWorld(b.getWorld()).notify(blockposition, iblockdata, iblockdata, 3);
         }
     }
 

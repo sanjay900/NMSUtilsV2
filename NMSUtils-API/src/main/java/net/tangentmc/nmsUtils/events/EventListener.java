@@ -1,5 +1,6 @@
 package net.tangentmc.nmsUtils.events;
 
+import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.entities.NMSEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,6 +12,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -76,5 +81,19 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void worldUnload(WorldUnloadEvent evt) {
 		util.getUtil().untrackWorldEntities(evt.getWorld());
+	}
+	@EventHandler
+	public void playerJoin(PlayerJoinEvent evt) {
+		Bukkit.getScheduler().runTaskLater(NMSUtils.getInstance(),()->NMSUtils.getInstance().getResourcePackAPI().updatePacks(evt.getPlayer()),1L);
+	}
+	@EventHandler
+	public void blockPlace(PlayerInteractEvent event) {
+		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+		//Always check main hand, as that is the hand you place blocks from.
+		String name = NMSUtils.getInstance().getResourcePackAPI().findItemFromStack(event.getPlayer().getInventory().getItemInMainHand());
+		if (name != null && name.startsWith("block")) {
+			event.setCancelled(true);
+			NMSUtils.getInstance().getResourcePackAPI().setBlock(event.getClickedBlock().getRelative(event.getBlockFace()).getLocation(),name);
+		}
 	}
 }
