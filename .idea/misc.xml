@@ -9,6 +9,17 @@
         <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/NMSUtils-API/pom.xml" />
+        <option value="$PROJECT_DIR$/NMSUtils-plugin/pom.xml" />
+        <option value="$PROJECT_DIR$/NMSUtils-v1_10_R1/pom.xml" />
+        <option value="$PROJECT_DIR$/NMSUtils-v1_11_R1/pom.xml" />
+        <option value="$PROJECT_DIR$/NMSUtils-v1_9_R1/pom.xml" />
+        <option value="$PROJECT_DIR$/NMSUtils-v1_9_R2/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </set>
+    </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
