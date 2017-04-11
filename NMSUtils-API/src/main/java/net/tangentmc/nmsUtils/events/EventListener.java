@@ -13,6 +13,7 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -32,6 +33,10 @@ public class EventListener implements Listener {
 	NMSUtils util = NMSUtils.getInstance();
 	public EventListener() {
 		Bukkit.getPluginManager().registerEvents(this, util);
+	}
+	@EventHandler
+	public void blockDamage(BlockDamageEvent evt) {
+		//TODO: blockdamage
 	}
 	@EventHandler
 	public void playerMove(PlayerMoveEvent event) {

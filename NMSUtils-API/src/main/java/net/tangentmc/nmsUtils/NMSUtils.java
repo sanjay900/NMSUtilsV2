@@ -1,6 +1,7 @@
 package net.tangentmc.nmsUtils;
 
 import net.tangentmc.nmsUtils.entities.NMSHologram;
+import net.tangentmc.nmsUtils.resourcepacks.ModelInfo;
 import net.tangentmc.nmsUtils.resourcepacks.ResourcePackAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -46,6 +47,7 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 		new CommandBuilder("getItem").withCommandExecutor(this).build();
         new CommandBuilder("uploadZip").withCommandExecutor(this).build();
 		new CommandBuilder("setBlock").withCommandExecutor(this).build();
+		new CommandBuilder("updateItem").withCommandExecutor(this).build();
 		listener= new EventListener();
 		map = new ImageMaps();
 		resourcePackAPI = new ResourcePackAPI();
@@ -77,6 +79,11 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 			if (sender instanceof Player) {
 				((Player) sender).getInventory().addItem(resourcePackAPI.getItemStack(args[0]));
 			}
+		}
+		if (label.equals("updateitem")) {
+	    	String[] args2 = new String[args.length-1];
+	    	System.arraycopy(args,1,args2,0,args2.length);
+			resourcePackAPI.getModelInfo(args[0]).updateViaCommand(args2,args[0],sender);
 		}
 		if (label.equals("spawnlaser")) {
 
