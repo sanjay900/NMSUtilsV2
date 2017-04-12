@@ -387,7 +387,7 @@ public class ResourcePackAPI {
         List<Map> overrides = (List<Map>) new Gson().fromJson(json,Map.class).get("overrides");
         overrides.forEach(override -> {
             String model = (String) override.get("model");
-            if ((itemType.equals("shields") && model.endsWith("_blocking")) || (itemType.equals("bows") && (model.endsWith("_0") || model.endsWith("_1") || model.endsWith("_2")))) return;
+            if (shouldSkip(itemType,model)) return;
             Map<String,Double> predicate = (Map<String, Double>) override.get("predicate");
             short realDamage = (short) (Math.round(predicate.get("damage")*material.getMaxDurability()));
             realDamage+=minValue;
@@ -398,6 +398,14 @@ public class ResourcePackAPI {
             }
             mapping.get(itemType).put(model,realDamage);
         });
+    }
+    private boolean shouldSkip(String itemType, String model) {
+        if (skipMap.containsKey(itemType)) {
+            for (String s : skipMap.get(itemType)) {
+                if (model.endsWith(s)) return true;
+            }
+        }
+        return false;
     }
     //We need to deal with mapping + the diamond hoe here.
     private void processBlock(JSONObject json, String name, OutputStream os) throws IOException {
@@ -423,7 +431,7 @@ public class ResourcePackAPI {
     private void processItem(JSONObject json, String name, String itemType, OutputStream os) throws IOException {
         IOUtils.write(json.toString(),os);
         //Dont add the seperate _blocking as its own thing
-        if ((itemType.equals("shields") && name.endsWith("_blocking")) || (itemType.equals("bows") && (name.endsWith("_0") || name.endsWith("_1") || name.endsWith("_2")))) return;
+        if (shouldSkip(itemType,name)) return;
         if (!mapping.get(itemType).containsKey(name)) {
             mapping.get(itemType).put(name,findNextKey(itemType));
         }
