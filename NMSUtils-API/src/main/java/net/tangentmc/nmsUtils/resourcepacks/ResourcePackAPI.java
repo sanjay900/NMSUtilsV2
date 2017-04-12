@@ -320,6 +320,7 @@ public class ResourcePackAPI {
                 break;
             case "bows":
                 textures.put("layer0", "items/bow_standby");
+                itemData.put("display",bowDisplay.toMap().get("display"));
                 overrides.add(new Override(new BowPullingDamagePredicate(0,0.25), defaultModelName));
                 overrides.add(new Override(new BowPullingDamagePredicate(0,0.50), defaultModelName));
                 overrides.add(new Override(new BowPullingDamagePredicate(0,0.75), defaultModelName));
