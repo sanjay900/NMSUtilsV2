@@ -1,7 +1,6 @@
 package net.tangentmc.nmsUtils;
 
 import net.tangentmc.nmsUtils.entities.NMSHologram;
-import net.tangentmc.nmsUtils.resourcepacks.ModelInfo;
 import net.tangentmc.nmsUtils.resourcepacks.ResourcePackAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -45,6 +44,9 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 		Bukkit.getWorlds().forEach(util::trackWorldEntities);
 		new CommandBuilder("spawnlaser").withCommandExecutor(this).build();
 		new CommandBuilder("getItem").withCommandExecutor(this).build();
+		new CommandBuilder("getShield").withCommandExecutor(this).build();
+		new CommandBuilder("getBow").withCommandExecutor(this).build();
+		new CommandBuilder("getWeapon").withCommandExecutor(this).build();
         new CommandBuilder("uploadZip").withCommandExecutor(this).build();
 		new CommandBuilder("setBlock").withCommandExecutor(this).build();
 		new CommandBuilder("updateItem").withCommandExecutor(this).build();
@@ -80,14 +82,27 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 				((Player) sender).getInventory().addItem(resourcePackAPI.getItemStack(args[0]));
 			}
 		}
+		if (label.equals("getbow")) {
+			if (sender instanceof Player) {
+				((Player) sender).getInventory().addItem(resourcePackAPI.getBow(args[0]));
+			}
+		}
+		if (label.equals("getshield")) {
+			if (sender instanceof Player) {
+				((Player) sender).getInventory().addItem(resourcePackAPI.getShield(args[0]));
+			}
+		}
+		if (label.equals("getweapon")) {
+			if (sender instanceof Player) {
+				((Player) sender).getInventory().addItem(resourcePackAPI.getWeapon(args[0]));
+			}
+		}
 		if (label.equals("updateitem")) {
 	    	String[] args2 = new String[args.length-1];
 	    	System.arraycopy(args,1,args2,0,args2.length);
-			resourcePackAPI.getModelInfo(args[0]).updateViaCommand(args2,args[0],sender);
+			resourcePackAPI.getModelInfo(args[0]).updateViaCommand(args2, sender);
 		}
 		if (label.equals("spawnlaser")) {
-
-
 			if (hologram != null) {
 				hologram.remove();
 			}

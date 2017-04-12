@@ -84,7 +84,7 @@ public class ModelInfo implements ConfigurationSerializable {
         return map;
     }
 
-    public void updateViaCommand(String[] args2, String itemName, CommandSender sender) {
+    public void updateViaCommand(String[] args2, CommandSender sender) {
         if (args2.length < 2) {
             sender.sendMessage("Invalid arguments for command!");
             return;

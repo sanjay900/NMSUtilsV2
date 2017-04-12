@@ -9,6 +9,7 @@ import net.tangentmc.nmsUtils.resourcepacks.handlers.Dropbox;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.FTP;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.Local;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.SFTP;
+import net.tangentmc.nmsUtils.resourcepacks.predicates.*;
 import net.tangentmc.nmsUtils.utils.MCException;
 import net.tangentmc.nmsUtils.utils.Utils;
 import org.apache.commons.io.IOUtils;
@@ -38,6 +39,69 @@ public class ResourcePackAPI {
     static {
         ConfigurationSerialization.registerClass(ModelInfo.class, "ModelInfo");
     }
+    private static JSONObject bowDisplay = new JSONObject("{" +
+            "\"display\": {\n" +
+            "        \"thirdperson_righthand\": {\n" +
+            "            \"rotation\": [ -80, 260, -40 ],\n" +
+            "            \"translation\": [ -1, -2, 2.5 ],\n" +
+            "            \"scale\": [ 0.9, 0.9, 0.9 ]\n" +
+            "        },\n" +
+            "        \"thirdperson_lefthand\": {\n" +
+            "            \"rotation\": [ -80, -280, 40 ],\n" +
+            "            \"translation\": [ -1, -2, 2.5 ],\n" +
+            "            \"scale\": [ 0.9, 0.9, 0.9 ]\n" +
+            "        },\n" +
+            "        \"firstperson_righthand\": {\n" +
+            "            \"rotation\": [ 0, -90, 25 ],\n" +
+            "            \"translation\": [ 1.13, 3.2, 1.13],\n" +
+            "            \"scale\": [ 0.68, 0.68, 0.68 ]\n" +
+            "        },\n" +
+            "        \"firstperson_lefthand\": {\n" +
+            "            \"rotation\": [ 0, 90, -25 ],\n" +
+            "            \"translation\": [ 1.13, 3.2, 1.13],\n" +
+            "            \"scale\": [ 0.68, 0.68, 0.68 ]\n" +
+            "        }\n" +
+            "    }" +
+            "}");
+    private static JSONObject shieldDisplay = new JSONObject("{" +
+            "\"display\": {\n" +
+            "        \"thirdperson_righthand\": {\n" +
+            "            \"rotation\": [ 0, 90, 0 ],\n" +
+            "            \"translation\": [ 10.51, 6, -4 ],\n" +
+            "            \"scale\": [ 1, 1, 1 ]\n" +
+            "        },\n" +
+            "        \"thirdperson_lefthand\": {\n" +
+            "            \"rotation\": [ 0, 90, 0 ],\n" +
+            "            \"translation\": [ 10.51, 6, 12 ],\n" +
+            "            \"scale\": [ 1, 1, 1 ]\n" +
+            "        },\n" +
+            "        \"firstperson_righthand\": {\n" +
+            "            \"rotation\": [ 0, 180, 5 ],\n" +
+            "            \"translation\": [ -10, 2, -10 ],\n" +
+            "            \"scale\": [ 1.25, 1.25, 1.25 ]\n" +
+            "        },\n" +
+            "        \"firstperson_lefthand\": {\n" +
+            "            \"rotation\": [ 0, 180, 5 ],\n" +
+            "            \"translation\": [ 10, 0, -10 ],\n" +
+            "            \"scale\": [ 1.25, 1.25, 1.25 ]\n" +
+            "        },\n" +
+            "        \"gui\": {\n" +
+            "            \"rotation\": [ 15, -25, -5 ],\n" +
+            "            \"translation\": [ 2, 3, 0 ],\n" +
+            "            \"scale\": [ 0.65, 0.65, 0.65 ]\n" +
+            "        },\n" +
+            "        \"fixed\": {\n" +
+            "            \"rotation\": [ 0, 180, 0 ],\n" +
+            "            \"translation\": [ -2, 4, -5],\n" +
+            "            \"scale\":[ 0.5, 0.5, 0.5]\n" +
+            "        },\n" +
+            "        \"ground\": {\n" +
+            "            \"rotation\": [ 0, 0, 0 ],\n" +
+            "            \"translation\": [ 4, 4, 2],\n" +
+            "            \"scale\":[ 0.25, 0.25, 0.25]\n" +
+            "        }\n" +
+            "    }" +
+            "}");
     //Display data for positioning blocks.
     private static JSONObject blockDisplay = new JSONObject(
             "{"+
@@ -77,7 +141,7 @@ public class ResourcePackAPI {
                     "            \"scale\": [ 0.40, 0.40, 0.40 ]"+
                     "        }"+
                     "}");
-    private Map<String,BiMap<String,Short>> mapping = HashBiMap.create();
+    private Map<String,BiMap<String,Short>> mapping = new HashMap<>();
     private FileConfiguration modelInfo;
     private List<ResourcePackHandler> handlerList = new ArrayList<>();
     private Map<String,Short> nextKeys = new HashMap<>();
@@ -91,6 +155,10 @@ public class ResourcePackAPI {
         nextKeys.put("weapons",(short)1);
         nextKeys.put("shields",(short)1);
         nextKeys.put("bows",(short)1);
+        mapping.putIfAbsent("items",HashBiMap.create());
+        mapping.putIfAbsent("weapons",HashBiMap.create());
+        mapping.putIfAbsent("shields",HashBiMap.create());
+        mapping.putIfAbsent("bows",HashBiMap.create());
         FileConfiguration config = NMSUtils.getInstance().getConfig();
         ConfigurationSection section = config.getConfigurationSection("resourcepackapi");
         if (section.getBoolean("enable_dropbox")) {
@@ -110,7 +178,6 @@ public class ResourcePackAPI {
             mappingFile.createNewFile();
             JSONObject mapping = getJSON(mappingFile.toPath());
             mapping.keys().forEachRemaining(key -> {
-                ResourcePackAPI.this.mapping.put(key, HashBiMap.create());
                 JSONObject vals = mapping.getJSONObject(key);
                 vals.keys().forEachRemaining( key2 -> {
                     ResourcePackAPI.this.mapping.get(key).put(key2, (short) vals.getInt(key2));
@@ -137,7 +204,7 @@ public class ResourcePackAPI {
         }
     }
     public void setBlock(Location l, String block) {
-        if (!mapping.containsKey(block)) {
+        if (!mapping.get("items").containsKey(block)) {
             throw new InvalidBlockException(block);
         }
         short id = mapping.get("items").get(block);
@@ -156,6 +223,9 @@ public class ResourcePackAPI {
     }
     public ItemStack getShield(String shield) {
         return getItemStack(shield,Material.SHIELD,"shields");
+    }
+    public ItemStack getBow(String bow)  {
+        return getItemStack(bow,Material.BOW,"bows");
     }
     public ItemStack getItemStack(String item) {
         return getItemStack(item,Material.DIAMOND_HOE,"items");
@@ -193,32 +263,31 @@ public class ResourcePackAPI {
             //Load the pack on its own
             compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"pack"),null,zos,(path,fileName) -> IOUtils.copy(new FileInputStream(path.toFile()), zos),this::filterFiles);
             //Parse custom items
-            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customItems"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"items",zos),this::filterFiles);
+            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customItems"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"items",zos),path->true);
             //Parse custom shields
-            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customShields"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"shields",zos),this::filterFiles);
+            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customShields"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"shields",zos),path->true);
             //Parse custom bows
-            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customBows"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"bows",zos),this::filterFiles);
+            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customBows"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"bows",zos),path->true);
             //Parse custom weapons
-            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customWeapons"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"weapons",zos),this::filterFiles);
+            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customWeapons"),MODEL_PREFIX+"item",zos,(path,fileName) -> processItem(getJSON(path),fileName.replace(MODEL_PREFIX,""),"weapons",zos),path->true);
             //Parse custom blocks, add in block metadata
-            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customBlocks"),MODEL_PREFIX+"block",zos,(path,fileName) -> processBlock(getJSON(path),fileName.replace(MODEL_PREFIX,""),zos),this::filterFiles);
+            compressWithFilter(Paths.get(NMSUtils.getInstance().getDataFolder().toString(),"customBlocks"),MODEL_PREFIX+"block",zos,(path,fileName) -> processBlock(getJSON(path),fileName.replace(MODEL_PREFIX,""),zos),path->true);
             Files.write(mappingFile.toPath(),new JSONObject(mapping).toString(4).getBytes());
-            Files.write(modelInfoFile.toPath(),new JSONObject(modelInfo).toString(4).getBytes());
             //First half of items
             writeFile(MODEL_PREFIX+"item/diamond_hoe.json", convertMapping(mapping.get("items"),
-                    "item/diamond_hoe", Material.DIAMOND_HOE,(short)0),zos);
+                    "item/diamond_hoe", Material.DIAMOND_HOE,(short)0,"items"),zos);
             //Second half of items
             writeFile(MODEL_PREFIX+"item/diamond_pickaxe.json", convertMapping(mapping.get("items"),
-                    "item/diamond_pickaxe", Material.DIAMOND_PICKAXE,Material.DIAMOND_HOE.getMaxDurability()),zos);
+                    "item/diamond_pickaxe", Material.DIAMOND_PICKAXE,Material.DIAMOND_HOE.getMaxDurability(),"items"),zos);
             //weapons
             writeFile(MODEL_PREFIX+"item/diamond_sword.json", convertMapping(mapping.get("weapons"),
-                    "item/diamond_sword", Material.DIAMOND_SWORD,(short)0),zos);
+                    "item/diamond_sword", Material.DIAMOND_SWORD,(short)0,"weapons"),zos);
             //bows
             writeFile(MODEL_PREFIX+"item/bow.json", convertMapping(mapping.get("bows"),
-                    "item/bow", Material.BOW,(short)0),zos);
+                    "item/bow", Material.BOW,(short)0,"bows"),zos);
             //shields
             writeFile(MODEL_PREFIX+"item/shield.json", convertMapping(mapping.get("shields"),
-                    "item/shield", Material.SHIELD,(short)0),zos);
+                    "item/shield", Material.SHIELD,(short)0,"shields"),zos);
             zos.closeEntry();
             zos.close();
             for (ResourcePackHandler resourcePackHandler : handlerList) {
@@ -234,15 +303,37 @@ public class ResourcePackAPI {
         zos.write(json.getBytes());
         zos.closeEntry();
     }
-    private String convertMapping(BiMap<String, Short> mapping, String defaultModel, Material material, short minDurability) {
-        Map<String,Object> hoeData = new HashMap<>();
-        hoeData.put("parent","item/handheld");
+    private String convertMapping(BiMap<String, Short> mapping, String defaultModelName, Material material, short minDurability, String typeName) {
+        Map<String,Object> itemData = new HashMap<>();
+        itemData.put("parent","item/handheld");
         Map<String,Object> textures = new HashMap<>();
-        textures.put("layer0",defaultModel);
-        hoeData.put("textures",textures);
         List<Override> overrides = new ArrayList<>();
-        //Add a default undamaged predicate
-        overrides.add(new Override(new Predicate(0,0),defaultModel));
+        switch (typeName) {
+            case "shields":
+                itemData.put("display",shieldDisplay.toMap().get("display"));
+                itemData.put("parent","builtin/entity");
+                textures.put("shield", "entity/shield_base_nopattern");
+                textures.put("pattern", "entity/shield_base");
+                textures.put("particle", "items/shears");
+                overrides.add(new Override(new ShieldPredicate(0,0,0), defaultModelName));
+                overrides.add(new Override(new ShieldPredicate(0,0,1),"item/shield_blocking"));
+                break;
+            case "bows":
+                textures.put("layer0", "items/bow_standby");
+                overrides.add(new Override(new BowPullingDamagePredicate(0,0.25), defaultModelName));
+                overrides.add(new Override(new BowPullingDamagePredicate(0,0.50), defaultModelName));
+                overrides.add(new Override(new BowPullingDamagePredicate(0,0.75), defaultModelName));
+                overrides.add(new Override(new BowPullingPredicate(1), "item/bow_pulling_0"));
+                overrides.add(new Override(new BowPullPullingPredicate(0.65,1), "item/bow_pulling_1"));
+                overrides.add(new Override(new BowPullPullingPredicate(0.9,1), "item/bow_pulling_2"));
+                break;
+            default:
+                textures.put("layer0", "items"+ defaultModelName.substring(4));
+                //Add a default undamaged predicate
+                overrides.add(new Override(new DamagePredicate(0,0), defaultModelName));
+                break;
+        }
+        itemData.put("textures",textures);
         //sort as minecraft predicates are done in order
         TreeMap<Short,String> inv = new TreeMap<>(mapping.inverse());
         for (short id : inv.keySet()) {
@@ -254,26 +345,57 @@ public class ResourcePackAPI {
             if (id > material.getMaxDurability()) continue;
             model = model.replace(".json","");
             double realId = (double)id/material.getMaxDurability();
-            overrides.add(new Override(new Predicate(0,realId),model));
+            switch (typeName) {
+                case "shields":
+                    overrides.add(new Override(new ShieldPredicate(0,realId,0),model));
+                    overrides.add(new Override(new ShieldPredicate(0,realId,1),model+"_blocking"));
+                    break;
+                case "bows" :
+                    overrides.add(new Override(new BowPullingDamageDamagedPredicate(0,realId, 0),model));
+                    overrides.add(new Override(new BowPullingDamageDamagedPredicate(1,realId, 1),model+"_0"));
+                    overrides.add(new Override(new BowDamagePredicate(0,realId,1,0.65),model+"_1"));
+                    overrides.add(new Override(new BowDamagePredicate(0,realId,1,0.9),model+"_2"));
+                    break;
+                default:
+                    overrides.add(new Override(new DamagePredicate(0,realId),model));
+                    break;
+            }
         }
-        //Add a predicate that is applied when using the hoe normally.
-        overrides.add(new Override(new Predicate(1,0),defaultModel));
-        hoeData.put("overrides",overrides);
+        switch (typeName) {
+            case "shields":
+                overrides.add(new Override(new ShieldPredicate(1,0,0), defaultModelName));
+                overrides.add(new Override(new ShieldPredicate(1,0,1),"item/shield_blocking"));
+                break;
+            case "bows" :
+                overrides.add(new Override(new BowPullingDamageDamagedPredicate(0,0, 1),"item/bow"));
+                overrides.add(new Override(new BowPullingDamageDamagedPredicate(1,0, 1),"item/bow_pulling_0"));
+                overrides.add(new Override(new BowDamagePredicate(1,0,1,0.65),"item/bow_pulling_1"));
+                overrides.add(new Override(new BowDamagePredicate(1,0,1,0.9),"item/bow_pulling_2"));
+                break;
+            default:
+                //Add a predicate that is applied when using the hoe normally.
+                overrides.add(new Override(new DamagePredicate(1,0), defaultModelName));
+                break;
+        }
+        itemData.put("overrides",overrides);
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization()
                 .setPrettyPrinting().create();
-        return gson.toJson(hoeData);
+        return gson.toJson(itemData);
     }
-    private void predicateToMap(String json, String itemType, short minValue) {
+    private void predicateToMap(String json, String itemType, short minValue, Material material) {
         List<Map> overrides = (List<Map>) new Gson().fromJson(json,Map.class).get("overrides");
         overrides.forEach(override -> {
+            String model = (String) override.get("model");
+            if ((itemType.equals("shields") && model.endsWith("_blocking")) || (itemType.equals("bows") && (model.endsWith("_0") || model.endsWith("_1") || model.endsWith("_2")))) return;
             Map<String,Double> predicate = (Map<String, Double>) override.get("predicate");
-            short realDamage = (short) (Math.round(predicate.get("damage")*Material.DIAMOND_HOE.getMaxDurability()));
+            short realDamage = (short) (Math.round(predicate.get("damage")*material.getMaxDurability()));
             realDamage+=minValue;
             this.nextKeys.put(itemType,(short) Math.max(this.nextKeys.get(itemType),realDamage+1));
             if (mapping.get(itemType).containsValue(realDamage)) {
-                realDamage = findNextKey(itemType);
+                System.out.println(model+" is attempting to bind to an existing id: "+realDamage);
+                return;
             }
-            mapping.get(itemType).put((String) override.get("model"),realDamage);
+            mapping.get(itemType).put(model,realDamage);
         });
     }
     //We need to deal with mapping + the diamond hoe here.
@@ -283,8 +405,9 @@ public class ResourcePackAPI {
             json.put("display",blockDisplay);
         }
         IOUtils.write(json.toString(),os);
+        //Blocks are just items with a special display value.
         if (!mapping.containsKey(name)) {
-            mapping.get("blocks").put(name,findNextKey("blocks"));
+            mapping.get("items").put(name,findNextKey("items"));
         }
     }
 
@@ -298,7 +421,9 @@ public class ResourcePackAPI {
 
     private void processItem(JSONObject json, String name, String itemType, OutputStream os) throws IOException {
         IOUtils.write(json.toString(),os);
-        if (!mapping.containsKey(name)) {
+        //Dont add the seperate _blocking as its own thing
+        if ((itemType.equals("shields") && name.endsWith("_blocking")) || (itemType.equals("bows") && (name.endsWith("_0") || name.endsWith("_1") || name.endsWith("_2")))) return;
+        if (!mapping.get(itemType).containsKey(name)) {
             mapping.get(itemType).put(name,findNextKey(itemType));
         }
     }
@@ -310,29 +435,34 @@ public class ResourcePackAPI {
     }
     private boolean filterFiles(Path path) {
         try {
-            if (path.endsWith("diamond_hoe.json")) {
-                predicateToMap(String.join("\n",Files.readAllLines(path)),"items",(short)0);
+            if (path.getFileName().toString().equals("diamond_hoe.json")) {
+                predicateToMap(String.join("\n",Files.readAllLines(path)),"items",(short)0, Material.DIAMOND_HOE);
                 System.out.println("File diamond_hoe.json imported. Deleting old model file.");
+                path.toFile().delete();
                 return false;
             }
-            if (path.endsWith("diamond_pickaxe.json")) {
-                predicateToMap(String.join("\n",Files.readAllLines(path)),"items",Material.DIAMOND_HOE.getMaxDurability());
+            if (path.getFileName().toString().equals("diamond_pickaxe.json")) {
+                predicateToMap(String.join("\n",Files.readAllLines(path)),"items",Material.DIAMOND_HOE.getMaxDurability(), Material.DIAMOND_PICKAXE);
                 System.out.println("File diamond_pickaxe.json imported. Deleting old model file.");
+                path.toFile().delete();
                 return false;
             }
-            if (path.endsWith("diamond_sword.json")) {
-                predicateToMap(String.join("\n",Files.readAllLines(path)),"weapons",(short)0);
+            if (path.getFileName().toString().equals("diamond_sword.json")) {
+                predicateToMap(String.join("\n",Files.readAllLines(path)),"weapons",(short)0, Material.DIAMOND_SWORD);
                 System.out.println("File diamond_sword.json imported. Deleting old model file.");
+                path.toFile().delete();
                 return false;
             }
-            if (path.endsWith("bow.json")) {
-                predicateToMap(String.join("\n",Files.readAllLines(path)),"bows",(short)0);
+            if (path.getFileName().toString().equals("bow.json")) {
+                predicateToMap(String.join("\n",Files.readAllLines(path)),"bows",(short)0, Material.BOW);
                 System.out.println("File bow.json imported. Deleting old model file.");
+                path.toFile().delete();
                 return false;
             }
-            if (path.endsWith("shield.json")) {
-                predicateToMap(String.join("\n",Files.readAllLines(path)),"shields",(short)0);
+            if (path.getFileName().toString().equals("shield.json")) {
+                predicateToMap(String.join("\n",Files.readAllLines(path)),"shields",(short)0, Material.SHIELD);
                 System.out.println("File shield.json imported. Deleting old model file.");
+                path.toFile().delete();
                 return false;
             }
         } catch (IOException e) {
@@ -394,6 +524,7 @@ public class ResourcePackAPI {
             default: return null;
         }
     }
+
     private interface FilterConsumer {
         boolean shouldCopy(Path path) throws IOException;
     }
@@ -408,5 +539,10 @@ public class ResourcePackAPI {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    private static final HashMap<String,String[]> skipMap = new HashMap<>();
+    static {
+        skipMap.put("shields",new String[]{"_blocking"});
+        skipMap.put("bows",new String[]{"_0","_1","_2"});
     }
 }

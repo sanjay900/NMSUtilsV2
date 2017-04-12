@@ -1,4 +1,4 @@
-package net.tangentmc.nmsUtils.resourcepacks;
+package net.tangentmc.nmsUtils.resourcepacks.predicates;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import net.tangentmc.nmsUtils.resourcepacks.predicates.Predicate;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Override {
-    private Predicate predicate;
-    private String model;
+public class DamagePredicate implements Predicate {
+    int damaged;
+    double damage;
 }
