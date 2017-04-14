@@ -258,6 +258,16 @@ public class ResourcePackAPI {
         }
         return (ModelInfo) modelInfo.get(item);
     }
+    //TODO: Add ability to take an existing compressed pack and import it, importing custom items
+    //TODO: Add ability for other plugins to provide more textures (easily done via compressWithFilter)
+    //TODO: Merge sounds.json
+    //TODO: do pack last, so it overrides all.
+    //TODO: Set it up so toggling the portal resourcepack really just applies the portal zip to this and merges.
+    //TODO: Also need to remember that a zip isnt enough, we need to be able to do customItems and customShields and shiz too.
+    //TODO: Also, all of the current pack should really be in portal.
+    //TODO: Then portal can apply the extra textures + the normal ones on a toggle.
+    //TODO: When extracting a pack, we should probably just export and process it once.
+    //TODO: Is there a way to speed up the below process?
     public void uploadZIP() throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(baos)) {
             //Load the pack on its own
