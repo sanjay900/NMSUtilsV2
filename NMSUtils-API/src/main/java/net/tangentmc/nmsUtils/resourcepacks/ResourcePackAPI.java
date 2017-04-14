@@ -425,7 +425,7 @@ public class ResourcePackAPI {
         }
         IOUtils.write(json.toString(),os);
         //Blocks are just items with a special display value.
-        if (!mapping.containsKey(name)) {
+        if (!mapping.get("items").containsKey(name)) {
             mapping.get("items").put(name,findNextKey("items"));
         }
     }
