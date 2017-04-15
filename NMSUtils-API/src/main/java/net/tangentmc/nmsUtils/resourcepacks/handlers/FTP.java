@@ -12,7 +12,6 @@ import java.io.IOException;
 public class FTP extends ResourcePackHandler {
     private String username;
     private String password;
-    @Getter
     private String url;
     private String uploadPath;
     private String hostname;
@@ -33,6 +32,12 @@ public class FTP extends ResourcePackHandler {
             client.storeFile(uploadPath + zipName,new ByteArrayInputStream(zip));
 
     }
+
+    @Override
+    public String getUrl() throws IOException {
+        return url+"?t="+System.currentTimeMillis();
+    }
+
     public FTPClient getFTPConnection() throws IOException {
         FTPClient client = new FTPClient();
         String hostname = this.hostname.split(":")[0];

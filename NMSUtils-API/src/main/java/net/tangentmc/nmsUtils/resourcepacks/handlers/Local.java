@@ -25,6 +25,6 @@ public class Local extends ResourcePackHandler {
 
     @Override
     public String getUrl() throws IOException {
-        return url;
+        return url+"?t="+System.currentTimeMillis();
     }
 }
