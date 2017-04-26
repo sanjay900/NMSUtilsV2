@@ -14,10 +14,11 @@ subprojects {
   repositories {
     mavenLocal()
 
-    maven { url "https://maven.tangentmc.net/repository/tangent" }
-    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots" }
-    maven { url "http://repo.dmulloy2.net/content/repositories/releases" }
     maven { url "http://repo.dmulloy2.net/content/groups/public/" }
+    maven { url "https://maven.tangentmc.net/repository/tangent/" }
+    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+    maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "http://repo.dmulloy2.net/content/groups/public" }
     mavenCentral()
   }
 
