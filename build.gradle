@@ -17,7 +17,7 @@ subprojects {
     maven { url "https://maven.tangentmc.net/repository/tangent" }
     maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots" }
     maven { url "http://repo.dmulloy2.net/content/repositories/releases" }
-    maven { url "http://repo.dmulloy2.net/content/groups/public" }
+    maven { url "http://repo.dmulloy2.net/content/groups/public/" }
     mavenCentral()
   }
 
