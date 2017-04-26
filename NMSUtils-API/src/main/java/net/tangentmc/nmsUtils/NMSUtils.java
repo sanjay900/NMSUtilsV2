@@ -1,7 +1,13 @@
 package net.tangentmc.nmsUtils;
 
+import lombok.Getter;
+import lombok.Setter;
+import net.tangentmc.nmsUtils.entities.HologramFactory;
 import net.tangentmc.nmsUtils.entities.NMSHologram;
+import net.tangentmc.nmsUtils.events.EventListener;
 import net.tangentmc.nmsUtils.resourcepacks.ResourcePackAPI;
+import net.tangentmc.nmsUtils.utils.CommandBuilder;
+import net.tangentmc.nmsUtils.utils.ReflectionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -13,14 +19,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.tangentmc.nmsUtils.entities.HologramFactory;
-import net.tangentmc.nmsUtils.events.EventListener;
-import net.tangentmc.nmsUtils.imagemap.ImageMaps;
-import net.tangentmc.nmsUtils.utils.CommandBuilder;
-import net.tangentmc.nmsUtils.utils.ReflectionManager;
-
 import java.io.File;
 
 @Getter
@@ -29,7 +27,6 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	private static NMSUtils instance;
 	@Setter
 	private NMSUtil util;
-	private ImageMaps map;
 	private EventListener listener;
 	@Getter
 	private ResourcePackAPI resourcePackAPI;
@@ -51,7 +48,6 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 		new CommandBuilder("setBlock").withCommandExecutor(this).build();
 		new CommandBuilder("updateItem").withCommandExecutor(this).build();
 		listener= new EventListener();
-		map = new ImageMaps();
 		resourcePackAPI = new ResourcePackAPI();
 
 	}

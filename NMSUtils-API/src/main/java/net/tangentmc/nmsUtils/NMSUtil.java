@@ -31,8 +31,6 @@ public interface NMSUtil {
 	boolean teleportFast(Entity entity, Location location, org.bukkit.util.Vector velocity);
 
 	void stealPlayerControls(Location loc, Player who);
-	void playMidi(Player to, boolean repeat, File midi) throws MidiUnavailableException, InvalidMidiDataException, IOException;
-	void playMidiNear(Location near, double area, boolean repeat, File midi) throws MidiUnavailableException, InvalidMidiDataException, IOException;
 	NPC spawnNPC(String name, Location location, String value, String signature);
 	NPC spawnNPC(String name, Location location);
 	NMSEntity getNMSEntity(Entity en);

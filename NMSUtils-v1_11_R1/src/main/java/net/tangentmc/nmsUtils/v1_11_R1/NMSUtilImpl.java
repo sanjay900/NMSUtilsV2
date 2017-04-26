@@ -13,8 +13,6 @@ import net.tangentmc.nmsUtils.entities.NMSEntity;
 import net.tangentmc.nmsUtils.entities.NMSHologram;
 import net.tangentmc.nmsUtils.entities.NPCManager;
 import net.tangentmc.nmsUtils.events.EntityMoveEvent;
-import net.tangentmc.nmsUtils.jinglenote.JingleNoteManager;
-import net.tangentmc.nmsUtils.jinglenote.MidiJingleSequencer;
 import net.tangentmc.nmsUtils.utils.MCException;
 import net.tangentmc.nmsUtils.v1_11_R1.entities.CraftHologramEntity;
 import net.tangentmc.nmsUtils.v1_11_R1.entities.NPC;
@@ -35,19 +33,16 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiUnavailableException;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import net.tangentmc.nmsUtils.v1_11_R1.entities.NPC;
 
 @Getter
 public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
 
     private HashSet<UUID> riding = new HashSet<>();
-    JingleNoteManager manager = new JingleNoteManager();
     NPCManager npcmanager;
 
     @SneakyThrows
@@ -170,19 +165,6 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         return NMSHologram.wrap(holo.getBukkitEntity());
     }
 
-    @Override
-    public void playMidi(Player to, boolean repeat, File midi)
-            throws MidiUnavailableException, InvalidMidiDataException, IOException {
-        MidiJingleSequencer seq = new MidiJingleSequencer(midi, repeat);
-        manager.play(to.getName(), seq);
-    }
-
-    @Override
-    public void playMidiNear(Location near, double area, boolean repeat, File midi)
-            throws MidiUnavailableException, InvalidMidiDataException, IOException {
-        MidiJingleSequencer seq = new MidiJingleSequencer(midi, repeat);
-        manager.playNear(near, area, seq);
-    }
 
     @Override
     public net.tangentmc.nmsUtils.entities.NPC spawnNPC(String name, Location location, String value, String signature) {
