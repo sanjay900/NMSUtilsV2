@@ -196,6 +196,13 @@ public class ResourcePackAPI implements TabExecutor {
             modelInfo = Utils.getConfig(modelInfoFile);
         } catch (IOException ignored) {}
     }
+    public void saveConf() {
+        try {
+            modelInfo.save(modelInfoFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public void updatePacks() {
         for (Player pl: Bukkit.getOnlinePlayers()) {
             updatePacks(pl);
@@ -278,6 +285,24 @@ public class ResourcePackAPI implements TabExecutor {
     private String getModelById(short id) {
         TypeId type = getModelType(id);
         return mapping.get(type.getType()).inverse().get(type.getId());
+    }
+    public String getFromStack(ItemStack is) {
+        if (is.getType() == Material.DIAMOND_HOE) {
+            return mapping.get("items").inverse().get(is.getDurability());
+        }
+        if (is.getType() == Material.DIAMOND_PICKAXE) {
+            return mapping.get("items").inverse().get(is.getDurability()-Material.DIAMOND_PICKAXE.getMaxDurability());
+        }
+        if (is.getType() == Material.BOW) {
+            return mapping.get("bows").inverse().get(is.getDurability());
+        }
+        if (is.getType() == Material.SHIELD) {
+            return mapping.get("shields").inverse().get(is.getDurability());
+        }
+        if (is.getType() == Material.DIAMOND_SWORD) {
+            return mapping.get("weapons").inverse().get(is.getDurability());
+        }
+        throw new InvalidItemException("Unknown material: "+is.getType());
     }
     private short getModelId(String item) {
         String type = getModelType(item);

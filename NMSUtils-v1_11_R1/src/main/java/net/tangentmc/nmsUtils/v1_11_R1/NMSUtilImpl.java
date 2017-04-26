@@ -6,6 +6,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import net.minecraft.server.v1_11_R1.*;
+import net.minecraft.server.v1_11_R1.Item;
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.entities.HologramFactory;
@@ -28,6 +29,7 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_11_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_11_R1.inventory.CraftItemStack;
 import org.bukkit.entity.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Listener;
@@ -38,6 +40,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import net.tangentmc.nmsUtils.v1_11_R1.entities.NPC;
+import org.bukkit.inventory.*;
+import org.bukkit.inventory.ItemStack;
 
 @Getter
 public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
@@ -216,6 +220,15 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
             tileentity.update();
             getWorld(b.getWorld()).notify(blockposition, iblockdata, iblockdata, 3);
         }
+    }
+
+    @Override
+    public ItemStack getStackFromSpawner(Block b) {
+        TileEntity tileentity = getWorld(b.getWorld()).getWorld().getTileEntityAt(b.getX(),b.getY(),b.getZ());
+        NBTTagCompound nbttagcompound = tileentity.save(new NBTTagCompound());
+        //type 10 is compound
+        NBTTagCompound item = nbttagcompound.getCompound("SpawnData").getList("ArmorItems",10).get(3);
+        return CraftItemStack.asBukkitCopy(new net.minecraft.server.v1_11_R1.ItemStack(item));
     }
 
     @Override

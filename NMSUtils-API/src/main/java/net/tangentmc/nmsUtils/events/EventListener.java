@@ -2,19 +2,27 @@ package net.tangentmc.nmsUtils.events;
 
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.entities.NMSEntity;
+import net.tangentmc.nmsUtils.resourcepacks.InvalidItemException;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.CreatureSpawner;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -22,6 +30,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import net.tangentmc.nmsUtils.NMSUtils;
@@ -36,6 +45,22 @@ public class EventListener implements Listener {
 	}
 	@EventHandler
 	public void blockDamage(BlockDamageEvent evt) {
+		try {
+			String item = util.getResourcePackAPI().getFromStack(NMSUtils.getInstance().getUtil().getStackFromSpawner(evt.getBlock()));
+			evt.setInstaBreak(util.getResourcePackAPI().getModelInfo(item).isBreakImmediately());
+		} catch (InvalidItemException ex) {}
+	}
+	@EventHandler(ignoreCancelled = true,priority= EventPriority.HIGH)
+	public void blockBreak(BlockBreakEvent evt) {
+		if (evt.getBlock().getType() == Material.MOB_SPAWNER && evt.getPlayer().getGameMode() != GameMode.CREATIVE) {
+			try {
+				ItemStack stack = NMSUtils.getInstance().getUtil().getStackFromSpawner(evt.getBlock());
+				String item = util.getResourcePackAPI().getFromStack(stack);
+				evt.getBlock().setType(Material.AIR);
+				evt.getBlock().getWorld().dropItemNaturally(evt.getBlock().getLocation(),stack);
+				evt.setCancelled(true);
+			} catch (InvalidItemException ex) {}
+		}
 		//TODO: blockdamage
 	}
 	@EventHandler

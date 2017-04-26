@@ -20,6 +20,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import net.tangentmc.nmsUtils.entities.HologramFactory.HologramObject;
+import org.bukkit.inventory.ItemStack;
 
 public interface NMSUtil {
 	void trackWorldEntities(World w);
@@ -35,4 +36,5 @@ public interface NMSUtil {
 	NPC spawnNPC(String name, Location location);
 	NMSEntity getNMSEntity(Entity en);
 	void updateBlockNBT(Block b, String json) throws MCException, MCException;
+	ItemStack getStackFromSpawner(Block b);
 }

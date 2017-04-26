@@ -108,7 +108,7 @@ public class ModelInfo implements ConfigurationSerializable {
         return map;
     }
     public static List<String> getCommands() {
-        return Arrays.asList("displayname","breakimmediately","recipe","blockcollision","canrotate","lock90");
+        return Arrays.asList("displayname","breakimmediately","recipe","blockcollision","canrotate","lock90","lore");
     }
     public void updateViaCommand(String[] args2, CommandSender sender) {
         if (args2.length < 1) {
@@ -128,33 +128,37 @@ public class ModelInfo implements ConfigurationSerializable {
                         @Override
                         public String getPromptText(ConversationContext context) {
                             if (first)
-                                return "Please enter the items lore. Use /end to stop entering lore";
-                            return null;
+                                return "Please enter the items lore. Type stop to stop entering lore";
+                            return "Enter the next line. Type stop to stop entering lore";
                         }
 
                         @Override
                         public Prompt acceptInput(ConversationContext context, String input) {
-                            newLore.add(ChatColor.translateAlternateColorCodes('&',input));
+                            newLore.add(ChatColor.translateAlternateColorCodes('&',"&r"+input));
+                            if (input.equals("stop")) {
+                                lore = newLore;
+                                NMSUtils.getInstance().getResourcePackAPI().saveConf();
+                                return null;
+                            }
                             first = false;
                             return this;
                         }
-                    }).addConversationAbandonedListener(abandonedEvent -> System.out.println(newLore)).withEscapeSequence("/end")
-                            .buildConversation((Conversable) sender).begin();
+                    }).buildConversation((Conversable) sender).begin();
                     break;
                 case "breakimmediately":
-                    askForBoolean("Should this block break immediately? (yes/no)",bool->this.breakImmediately = bool, (Conversable) sender);
+                    askForBoolean("Should this block break immediately? (true/false)",bool->this.breakImmediately = bool, (Conversable) sender);
                     break;
                 case "recipe":
                     assignFromCraftingWindow();
                     break;
                 case "blockcollision":
-                    askForBoolean("Should this block have collisions? (yes/no)",bool->this.collisions = bool, (Conversable) sender);
+                    askForBoolean("Should this block have collisions? (true/false)",bool->this.collisions = bool, (Conversable) sender);
                     break;
                 case "canrotate":
-                    askForBoolean("Should this block rotate? (yes/no)",bool->this.rotatable = bool, (Conversable) sender);
+                    askForBoolean("Should this block rotate? (true/false)",bool->this.rotatable = bool, (Conversable) sender);
                     break;
                 case "lock90":
-                    askForBoolean("Should this block limit its rotations to 90 degrees? (yes/no)\n(note that if this setting is false, collisions are automatically disabled.)",
+                    askForBoolean("Should this block limit its rotations to 90 degrees? (true/false)\n(note that if this setting is false, collisions are automatically disabled.)",
                             bool->this.rotateAnyAngle = !bool, (Conversable) sender);
                     break;
                 default:
@@ -166,26 +170,16 @@ public class ModelInfo implements ConfigurationSerializable {
 
     }
     private void askForBoolean(String prompt, Consumer<Boolean> consumer, Conversable sender) {
-        new ConversationFactory(NMSUtils.getInstance()).withFirstPrompt(new FixedSetPrompt("yes","no","y","n","true","false") {
+        new ConversationFactory(NMSUtils.getInstance()).withFirstPrompt(new BooleanPrompt() {
             @Override
             public String getPromptText(ConversationContext context) {
                 return prompt;
             }
 
             @Override
-            protected Prompt acceptValidatedInput(ConversationContext context, String input) {
-                switch (input) {
-                    case "yes":
-                    case "y":
-                    case "true":
-                        consumer.accept(true);
-                        return null;
-                    case "no":
-                    case "n":
-                    case "false":
-                        consumer.accept(false);
-                        return null;
-                }
+            protected Prompt acceptValidatedInput(ConversationContext context, boolean input) {
+                consumer.accept(input);
+                NMSUtils.getInstance().getResourcePackAPI().saveConf();
                 return null;
             }
         }).buildConversation(sender).begin();
@@ -200,6 +194,7 @@ public class ModelInfo implements ConfigurationSerializable {
             @Override
             public Prompt acceptInput(ConversationContext context, String input) {
                 consumer.accept(ChatColor.translateAlternateColorCodes('&',input));
+                NMSUtils.getInstance().getResourcePackAPI().saveConf();
                 return null;
             }
         }).buildConversation(sender).begin();
@@ -207,6 +202,7 @@ public class ModelInfo implements ConfigurationSerializable {
 
     private void assignFromCraftingWindow() {
         //TODO: this
+        NMSUtils.getInstance().getResourcePackAPI().saveConf();
     }
 
     public String toString() {
