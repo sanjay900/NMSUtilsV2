@@ -103,7 +103,7 @@ public class ResourcePackAPI {
             "    }" +
             "}");
     //Display data for positioning blocks.
-    private static JSONObject blockDisplay = new JSONObject(
+    private static JSONObject blockDisplay1 = new JSONObject(
             "{"+
                     "        \"head\": { "+
                     "            \"rotation\": [ -30, 0, 0 ], " +
@@ -258,16 +258,6 @@ public class ResourcePackAPI {
         }
         return (ModelInfo) modelInfo.get(item);
     }
-    //TODO: Add ability to take an existing compressed pack and import it, importing custom items
-    //TODO: Add ability for other plugins to provide more textures (easily done via compressWithFilter)
-    //TODO: Merge sounds.json
-    //TODO: do pack last, so it overrides all.
-    //TODO: Set it up so toggling the portal resourcepack really just applies the portal zip to this and merges.
-    //TODO: Also need to remember that a zip isnt enough, we need to be able to do customItems and customShields and shiz too.
-    //TODO: Also, all of the current pack should really be in portal.
-    //TODO: Then portal can apply the extra textures + the normal ones on a toggle.
-    //TODO: When extracting a pack, we should probably just export and process it once.
-    //TODO: Is there a way to speed up the below process?
     public void uploadZIP() throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(baos)) {
             //Load the pack on its own
@@ -421,10 +411,10 @@ public class ResourcePackAPI {
     private void processBlock(JSONObject json, String name, OutputStream os) throws IOException {
         //Apply model for placing inside mob spawner
         if (!json.has("display")) {
-            json.put("display",blockDisplay);
+            json.put("display", blockDisplay1);
         } else {
             JSONObject theirDisplay = json.getJSONObject("display");
-            theirDisplay.put("head",blockDisplay.get("head"));
+            theirDisplay.put("head", blockDisplay1.get("head"));
         }
         IOUtils.write(json.toString(),os);
         //Blocks are just items with a special display value.
@@ -451,9 +441,14 @@ public class ResourcePackAPI {
     }
 
     private JSONObject getJSON(Path p) throws IOException {
-        String text = String.join("\n",Files.readAllLines(p));
-        if (!text.startsWith("{")) return new JSONObject();
-        return new JSONObject(text);
+        try {
+            String text = String.join("\n", Files.readAllLines(p));
+            if (!text.startsWith("{")) return new JSONObject();
+            return new JSONObject(text);
+        } catch (IOException ex) {
+            System.out.println("Error reading file: "+p);
+            throw ex;
+        }
     }
     private boolean filterFiles(Path path) {
         try {
