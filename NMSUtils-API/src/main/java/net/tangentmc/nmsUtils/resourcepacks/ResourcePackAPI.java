@@ -422,6 +422,9 @@ public class ResourcePackAPI {
         //Apply model for placing inside mob spawner
         if (!json.has("display")) {
             json.put("display",blockDisplay);
+        } else {
+            JSONObject theirDisplay = json.getJSONObject("display");
+            theirDisplay.put("head",blockDisplay.get("head"));
         }
         IOUtils.write(json.toString(),os);
         //Blocks are just items with a special display value.

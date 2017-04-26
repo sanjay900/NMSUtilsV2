@@ -2,5 +2,5 @@
 description = ''
 dependencies {
   compile project(':NMSUtils-API')
-  compileOnly(group: 'org.spigotmc', name: 'spigot', version:'1.10-R0.1-SNAPSHOT')
+  compileOnly(group: 'org.spigotmc', name: 'spigot', version:'1.10.2-R0.1-SNAPSHOT')
 }

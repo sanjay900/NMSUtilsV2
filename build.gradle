@@ -13,19 +13,18 @@ subprojects {
   
   repositories {
     mavenLocal()
-    
-    maven { url "http://repo.dmulloy2.net/content/groups/public/" }
-    maven { url "https://maven.tangentmc.net/repository/tangent/" }
-    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
-    maven { url "http://repo.maven.apache.org/maven2" }
-    maven { url "http://repo.dmulloy2.net/content/groups/public" }
+
+    maven { url "https://maven.tangentmc.net/repository/tangent" }
+    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots" }
+    maven { url "http://repo.dmulloy2.net/content/repositories/releases" }
+    mavenCentral()
   }
 
   
   dependencies {
     compile group: 'net.jodah', name: 'expiringmap', version:'0.5.1'
     compileOnly "org.projectlombok:lombok:1.16.16"
-    compileOnly(group: 'com.comphenix.protocol', name: 'ProtocolLib', version:'4.0.0-SNAPSHOT') {
+    compileOnly(group: 'com.comphenix.protocol', name: 'ProtocolLib', version:'4.2.1') {
       exclude(module: 'spigot')
       exclude(module: 'spigot-api')
     }
