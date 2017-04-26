@@ -13,10 +13,14 @@ import net.tangentmc.nmsUtils.resourcepacks.predicates.*;
 import net.tangentmc.nmsUtils.utils.MCException;
 import net.tangentmc.nmsUtils.utils.Utils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -31,11 +35,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
-public class ResourcePackAPI {
+public class ResourcePackAPI implements TabExecutor {
     static {
         ConfigurationSerialization.registerClass(ModelInfo.class, "ModelInfo");
     }
@@ -196,6 +201,9 @@ public class ResourcePackAPI {
             updatePacks(pl);
         }
     }
+    public List<String> findAutoCompletions(String item) {
+        return mapping.values().stream().flatMap(s -> s.keySet().stream()).filter(s -> s.startsWith(item)).collect(Collectors.toList());
+    }
     public void updatePacks(Player pl) {
         try {
             pl.setResourcePack(handlerList.get(0).getUrl());
@@ -247,16 +255,64 @@ public class ResourcePackAPI {
         meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
         meta.addItemFlags(ItemFlag.HIDE_DESTROYS);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        ModelInfo info = (ModelInfo) modelInfo.get(item,new ModelInfo(item));
+        ModelInfo info = getModelInfo(item);
         info.applyToMeta(meta);
         it.setItemMeta(meta);
         return it;
     }
     public ModelInfo getModelInfo(String item) {
-        if (!modelInfo.contains(item)) {
-            setInformation(item,new ModelInfo(item));
+        if (item.matches("\\d*")) {
+            item = getModelById(Short.parseShort(item));
         }
+        String type = getModelType(item);
+        short id = getModelId(item);
+        if (!modelInfo.contains(item)) {
+            setInformation(item,new ModelInfo(item,type,id));
+        }
+        type = StringUtils.capitalize(type).substring(0,type.length()-1);
+        if (item.startsWith("block")) type = "Block";
+        ModelInfo info = (ModelInfo) modelInfo.get(item);
+        info.assignTypeId(item,type,id);
         return (ModelInfo) modelInfo.get(item);
+    }
+    private String getModelById(short id) {
+        TypeId type = getModelType(id);
+        return mapping.get(type.getType()).inverse().get(type.getId());
+    }
+    private short getModelId(String item) {
+        String type = getModelType(item);
+        short id = mapping.get(type).get(item);
+        switch (type) {
+            case "shields":
+                id-=Material.BOW.getMaxDurability();
+            case "bows":
+                id-=Material.DIAMOND_SWORD.getMaxDurability();
+            case "weapons":
+                id-=Material.DIAMOND_HOE.getMaxDurability();
+                id-=Material.DIAMOND_PICKAXE.getMaxDurability();
+        }
+        return id;
+    }
+    private TypeId getModelType(short id) {
+        if (id < Material.DIAMOND_HOE.getMaxDurability()) return new TypeId("items",id);
+        id-= Material.DIAMOND_HOE.getMaxDurability();
+        if (id < Material.DIAMOND_PICKAXE.getMaxDurability()) return new TypeId("items", (short) (id+Material.DIAMOND_HOE.getMaxDurability()));
+        id-= Material.DIAMOND_PICKAXE.getMaxDurability();
+        if (id < Material.DIAMOND_SWORD.getMaxDurability()) return new TypeId("weapons",id);
+        id-= Material.DIAMOND_SWORD.getMaxDurability();
+        if (id < Material.BOW.getMaxDurability()) return new TypeId("bows",id);
+        id-= Material.BOW.getMaxDurability();
+        if (id < Material.SHIELD.getMaxDurability()) return new TypeId("shields",id);
+        throw new InvalidItemException("Unknown model id: "+id);
+    }
+    public String getModelType(String item) {
+        for (Map.Entry<String, BiMap<String, Short>> mappingEntry : mapping.entrySet()) {
+            if (mappingEntry.getValue().containsKey(item)) {
+                return mappingEntry.getKey();
+            }
+        }
+
+        throw new InvalidItemException("Unknown model id: "+item);
     }
     public void uploadZIP() throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -540,6 +596,62 @@ public class ResourcePackAPI {
                 return "weapons";
             default: return null;
         }
+    }
+
+    @java.lang.Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (label.equals("uploadzip")) {
+            Bukkit.getScheduler().runTaskAsynchronously(NMSUtils.getInstance(),()->{
+                try {
+                    uploadZIP();
+                    updatePacks();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+        if (label.equals("getitem") && sender instanceof Player) {
+            String modelType = getModelType(args[0]);
+            switch (modelType) {
+                case "items":
+                    ((Player) sender).getInventory().addItem(getItemStack(args[0]));
+                    break;
+                case "bows":
+                    ((Player) sender).getInventory().addItem(getBow(args[0]));
+                    break;
+                case "shields":
+                    ((Player) sender).getInventory().addItem(getShield(args[0]));
+                    break;
+                case "weapons":
+                    ((Player) sender).getInventory().addItem(getWeapon(args[0]));
+                    break;
+            }
+        }
+        if (label.equals("iteminfo")) {
+            if (sender instanceof Player)
+                ((Player) sender).spigot().sendMessage(getModelInfo(args[0]).getComponent());
+            else {
+                sender.sendMessage(getModelInfo(args[0])+"");
+            }
+        }
+        if (label.equals("updatemodel")) {
+            String[] args2 = new String[args.length-1];
+            System.arraycopy(args,1,args2,0,args2.length);
+            getModelInfo(args[0]).updateViaCommand(args2, sender);
+        }
+        return false;
+    }
+
+    @java.lang.Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (command.getLabel().equals("uploadzip")) return null;
+        if (args.length < 2) {
+            return findAutoCompletions(args.length==0?"":args[0]);
+        }
+        if (args.length == 2 && command.getLabel().equals("updatemodel")) {
+            return ModelInfo.getCommands().stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
+        }
+        return null;
     }
 
     private interface FilterConsumer {

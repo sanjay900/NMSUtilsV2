@@ -2,6 +2,8 @@ package net.tangentmc.nmsUtils;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.tangentmc.nmsUtils.entities.HologramFactory;
 import net.tangentmc.nmsUtils.entities.NMSHologram;
 import net.tangentmc.nmsUtils.events.EventListener;
@@ -14,12 +16,14 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.List;
 
 @Getter
 public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
@@ -39,16 +43,13 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 		}
 		Bukkit.getPluginManager().registerEvents(this, this);
 		Bukkit.getWorlds().forEach(util::trackWorldEntities);
+        listener= new EventListener();
+        resourcePackAPI = new ResourcePackAPI();
 		new CommandBuilder("spawnlaser").withCommandExecutor(this).build();
-		new CommandBuilder("getItem").withCommandExecutor(this).build();
-		new CommandBuilder("getShield").withCommandExecutor(this).build();
-		new CommandBuilder("getBow").withCommandExecutor(this).build();
-		new CommandBuilder("getWeapon").withCommandExecutor(this).build();
-        new CommandBuilder("uploadZip").withCommandExecutor(this).build();
-		new CommandBuilder("setBlock").withCommandExecutor(this).build();
-		new CommandBuilder("updateItem").withCommandExecutor(this).build();
-		listener= new EventListener();
-		resourcePackAPI = new ResourcePackAPI();
+		new CommandBuilder("getItem").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
+		new CommandBuilder("uploadZip").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
+		new CommandBuilder("updateModel").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
+		new CommandBuilder("iteminfo").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
 
 	}
 	@Override
@@ -58,46 +59,6 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	NMSHologram hologram;
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-	    if (label.equals("uploadzip")) {
-            Bukkit.getScheduler().runTaskAsynchronously(this,()->{
-				try {
-					resourcePackAPI.uploadZIP();
-					resourcePackAPI.updatePacks();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			});
-        }
-        if (label.equals("setblock")) {
-			if (sender instanceof Player) {
-				resourcePackAPI.setBlock(((Player) sender).getLocation(),args[0]);
-			}
-		}
-		if (label.equals("getitem")) {
-			if (sender instanceof Player) {
-				((Player) sender).getInventory().addItem(resourcePackAPI.getItemStack(args[0]));
-			}
-		}
-		if (label.equals("getbow")) {
-			if (sender instanceof Player) {
-				((Player) sender).getInventory().addItem(resourcePackAPI.getBow(args[0]));
-			}
-		}
-		if (label.equals("getshield")) {
-			if (sender instanceof Player) {
-				((Player) sender).getInventory().addItem(resourcePackAPI.getShield(args[0]));
-			}
-		}
-		if (label.equals("getweapon")) {
-			if (sender instanceof Player) {
-				((Player) sender).getInventory().addItem(resourcePackAPI.getWeapon(args[0]));
-			}
-		}
-		if (label.equals("updateitem")) {
-	    	String[] args2 = new String[args.length-1];
-	    	System.arraycopy(args,1,args2,0,args2.length);
-			resourcePackAPI.getModelInfo(args[0]).updateViaCommand(args2, sender);
-		}
 		if (label.equals("spawnlaser")) {
 			if (hologram != null) {
 				hologram.remove();

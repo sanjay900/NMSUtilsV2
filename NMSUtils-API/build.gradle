@@ -1,8 +1,3 @@
-repositories {
-    maven {
-        url "https://repo.inventivetalent.org/content/groups/public/"
-    }
-}
 description = ''
 dependencies {
     compileOnly(group: 'org.spigotmc', name: 'spigot-api', version: '1.11-R0.1-SNAPSHOT')
@@ -14,6 +9,7 @@ dependencies {
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
     compile group: 'com.google.guava', name: 'guava', version: '21.0'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+    compile group: 'net.md-5', name: 'bungeecord-chat', version: '1.10-SNAPSHOT'
 
 
 }
