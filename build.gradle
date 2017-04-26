@@ -13,7 +13,6 @@ subprojects {
 
   repositories {
     mavenLocal()
-    maven { url "http://repo.dmulloy2.net/content/groups/public/" }
     maven {
       credentials {
         username tangentUser
@@ -21,6 +20,8 @@ subprojects {
       }
       url "https://maven.tangentmc.net/repository/tangent/"
     }
+    maven { url "http://repo.dmulloy2.net/content/repositories/releases" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
     mavenCentral()
   }
