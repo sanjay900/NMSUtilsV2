@@ -22,23 +22,17 @@ subprojects {
     }
     maven { url "http://repo.dmulloy2.net/content/repositories/releases" }
     maven { url "http://repo.dmulloy2.net/content/repositories/snapshots" }
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
-    maven { url "https://repo.md-5.net/content/groups/public/" }
-    maven {
-      url "https://repo.inventivetalent.org/content/groups/public/"
-    }
     mavenCentral()
   }
 
 
   dependencies {
-    compile group: 'net.jodah', name: 'expiringmap', version:'0.5.1'
-    compileOnly "org.projectlombok:lombok:1.16.16"
     compileOnly(group: 'com.comphenix.protocol', name: 'ProtocolLib', version:'4.2.1') {
       exclude(module: 'spigot')
       exclude(module: 'spigot-api')
     }
+    compileOnly "org.projectlombok:lombok:1.16.16"
   }
 
 

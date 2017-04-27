@@ -12,6 +12,7 @@ import net.tangentmc.nmsUtils.resourcepacks.handlers.SFTP;
 import net.tangentmc.nmsUtils.resourcepacks.predicates.*;
 import net.tangentmc.nmsUtils.utils.MCException;
 import net.tangentmc.nmsUtils.utils.Utils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -213,7 +214,7 @@ public class ResourcePackAPI implements TabExecutor {
     }
     public void updatePacks(Player pl) {
         try {
-            pl.setResourcePack(handlerList.get(0).getUrl());
+            pl.setResourcePack(handlerList.get(0).getUrl(), DigestUtils.sha1(handlerList.get(0).getUrl()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -291,7 +292,7 @@ public class ResourcePackAPI implements TabExecutor {
             return mapping.get("items").inverse().get(is.getDurability());
         }
         if (is.getType() == Material.DIAMOND_PICKAXE) {
-            return mapping.get("items").inverse().get(is.getDurability()-Material.DIAMOND_PICKAXE.getMaxDurability());
+            return mapping.get("items").inverse().get(is.getDurability()+Material.DIAMOND_HOE.getMaxDurability());
         }
         if (is.getType() == Material.BOW) {
             return mapping.get("bows").inverse().get(is.getDurability());
