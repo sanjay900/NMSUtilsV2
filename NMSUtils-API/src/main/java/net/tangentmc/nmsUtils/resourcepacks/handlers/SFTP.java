@@ -20,7 +20,10 @@ public class SFTP extends ResourcePackHandler {
     private boolean isKeyBased;
     private String key;
     private String serverPath;
+    @Getter
     private String url;
+    @Getter
+    private String hash;
     public SFTP(ConfigurationSection config) {
         super(config);
         config = config.getConfigurationSection("sftp");
@@ -31,6 +34,7 @@ public class SFTP extends ResourcePackHandler {
         serverPath = config.getString("server_path");
         key = config.getString("auth.key_file");
         isKeyBased = config.getBoolean("auth.keyBasedAuthentication");
+        hash = config.getString("zip_hash");
     }
 
     @Override
@@ -51,11 +55,10 @@ public class SFTP extends ResourcePackHandler {
                 s.disconnect();
             }
         }
-    }
 
-    @Override
-    public String getUrl() throws IOException {
-        return url+"?t="+System.currentTimeMillis();
+        hash = DigestUtils.sha1Hex(zip).toLowerCase();
+        NMSUtils.getInstance().getConfig().set("resourcepackapi.sftp.zip_hash",this.hash);
+        NMSUtils.getInstance().saveConfig();
     }
 
     private Session getSession() throws JSchException {

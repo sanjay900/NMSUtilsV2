@@ -12,7 +12,8 @@ import net.tangentmc.nmsUtils.resourcepacks.handlers.SFTP;
 import net.tangentmc.nmsUtils.resourcepacks.predicates.*;
 import net.tangentmc.nmsUtils.utils.MCException;
 import net.tangentmc.nmsUtils.utils.Utils;
-import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -153,6 +154,7 @@ public class ResourcePackAPI implements TabExecutor {
     private Map<String,Short> nextKeys = new HashMap<>();
     private File mappingFile;
     private File modelInfoFile;
+
     @SuppressWarnings("unchecked")
     public ResourcePackAPI() {
         //Start at key 1, damage 0 is dedicated to the default item
@@ -186,6 +188,10 @@ public class ResourcePackAPI implements TabExecutor {
             mapping.keys().forEachRemaining(key -> {
                 JSONObject vals = mapping.getJSONObject(key);
                 vals.keys().forEachRemaining( key2 -> {
+                    if (!new File(NMSUtils.getInstance().getDataFolder()+"/"+getFolder(key,key2)+key2.substring(key2.indexOf("/"))+".json").exists()) {
+                        System.out.println("File: "+key2+" appears to have been removed. Removing mapping!");
+                        return;
+                    }
                     ResourcePackAPI.this.mapping.get(key).put(key2, (short) vals.getInt(key2));
                     if (nextKeys.get(key) == vals.getInt(key2)) {
                         nextKeys.put(key, (short) (nextKeys.get(key)+1));
@@ -196,6 +202,17 @@ public class ResourcePackAPI implements TabExecutor {
             modelInfoFile.createNewFile();
             modelInfo = Utils.getConfig(modelInfoFile);
         } catch (IOException ignored) {}
+    }
+    private String getFolder(String type, String item) {
+        switch (type) {
+            case "bows": return "customBows";
+            case "shields": return "customShields";
+            case "weapons": return "customWeapons";
+            case "items":
+                if (item.startsWith("block")) return "customBlocks";
+                return "customItems";
+        }
+        return null;
     }
     public void saveConf() {
         try {
@@ -214,8 +231,8 @@ public class ResourcePackAPI implements TabExecutor {
     }
     public void updatePacks(Player pl) {
         try {
-            pl.setResourcePack(handlerList.get(0).getUrl());
-        } catch (IOException e) {
+            pl.setResourcePack(handlerList.get(0).getUrl(), Hex.decodeHex(handlerList.get(0).getHash().toCharArray()));
+        } catch (IOException | DecoderException e) {
             e.printStackTrace();
         }
     }
@@ -373,7 +390,7 @@ public class ResourcePackAPI implements TabExecutor {
             zos.closeEntry();
             zos.close();
             for (ResourcePackHandler resourcePackHandler : handlerList) {
-                resourcePackHandler.uploadZip(baos.toByteArray(),new String(DigestUtils.sha1(baos.toByteArray())));
+                resourcePackHandler.uploadZip(baos.toByteArray());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -421,6 +438,11 @@ public class ResourcePackAPI implements TabExecutor {
         TreeMap<Short,String> inv = new TreeMap<>(mapping.inverse());
         for (short id : inv.keySet()) {
             String model = inv.get(id);
+            if (!new File(NMSUtils.getInstance().getDataFolder()+"/"+getFolder(typeName,model)+model.substring(model.indexOf("/"))+".json").exists()) {
+                System.out.println("File: "+model+" appears to have been removed. Removing mapping!");
+                mapping.remove(model);
+                continue;
+            }
             if (minDurability != 0) {
                 if (id <= minDurability) continue;
             }

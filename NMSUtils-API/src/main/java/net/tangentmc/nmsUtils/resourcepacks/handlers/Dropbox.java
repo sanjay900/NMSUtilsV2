@@ -29,7 +29,7 @@ public class Dropbox extends ResourcePackHandler {
         this.accessToken = config.getString("access_token");
         this.serverPath = config.getString("folder_path");
         this.url = config.getString("uploaded_url");
-        this.hash = config.getString("uploaded_hash");
+        this.hash = config.getString("zip_hash");
     }
 
     @Override
@@ -43,9 +43,9 @@ public class Dropbox extends ResourcePackHandler {
                 .withMode(WriteMode.OVERWRITE)
                 .uploadAndFinish(new ByteArrayInputStream(zip));
         url = getDropBoxClient().sharing().createSharedLinkWithSettings(fileName).getUrl()+DOWNLOAD_OPTION;
-        this.hash = hash;
+        hash = DigestUtils.sha1Hex(zip).toLowerCase();
         NMSUtils.getInstance().getConfig().set("resourcepackapi.dropbox.uploaded_url",this.url);
-        NMSUtils.getInstance().getConfig().set("resourcepackapi.dropbox.uploaded_hash",this.hash);
+        NMSUtils.getInstance().getConfig().set("resourcepackapi.dropbox.zip_hash",this.hash);
         NMSUtils.getInstance().saveConfig();
     }
 

@@ -14,9 +14,12 @@ import java.io.IOException;
 public class FTP extends ResourcePackHandler {
     private String username;
     private String password;
+    @Getter
     private String url;
     private String uploadPath;
     private String hostname;
+    @Getter
+    private String hash;
 
     public FTP(ConfigurationSection config) {
         super(config);
@@ -26,17 +29,16 @@ public class FTP extends ResourcePackHandler {
         this.url = config.getString("url");
         this.uploadPath = config.getString("server_path");
         this.hostname = config.getString("hostname");
+        this.hash = config.getString("zip_hash");
     }
 
     @Override
     public void uploadZip(byte[] zip) throws IOException {
         FTPClient client = getFTPConnection();
             client.storeFile(uploadPath + zipName,new ByteArrayInputStream(zip));
-    }
-
-    @Override
-    public String getUrl() throws IOException {
-        return url+"?t="+System.currentTimeMillis();
+        hash = DigestUtils.sha1Hex(zip).toLowerCase();
+        NMSUtils.getInstance().getConfig().set("resourcepackapi.ftp.zip_hash",this.hash);
+        NMSUtils.getInstance().saveConfig();
     }
 
     public FTPClient getFTPConnection() throws IOException {
