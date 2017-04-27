@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.Getter;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.Dropbox;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.FTP;
@@ -151,6 +152,7 @@ public class ResourcePackAPI implements TabExecutor {
                     "            \"scale\": [ 0.40, 0.40, 0.40 ]"+
                     "        }"+
                     "}");
+
     private Map<String,BiMap<String,Short>> mapping = new HashMap<>();
     private FileConfiguration modelInfo;
     private List<ResourcePackHandler> handlerList = new ArrayList<>();
@@ -206,6 +208,10 @@ public class ResourcePackAPI implements TabExecutor {
             modelInfo = Utils.getConfig(modelInfoFile);
         } catch (IOException ignored) {}
     }
+    public BiMap<String,Short> getMapping(String type) {
+        if (!mapping.containsKey(type)) return HashBiMap.create();
+        return HashBiMap.create(mapping.get(type));
+    }
     private String getFolder(String type, String item) {
         switch (type) {
             case "bows": return "customBows";
@@ -254,17 +260,19 @@ public class ResourcePackAPI implements TabExecutor {
             e.printStackTrace();
         }
     }
-    public ItemStack getWeapon(String weapon) {
-        return getItemStack(weapon,Material.DIAMOND_SWORD,"weapons");
-    }
-    public ItemStack getShield(String shield) {
-        return getItemStack(shield,Material.SHIELD,"shields");
-    }
-    public ItemStack getBow(String bow)  {
-        return getItemStack(bow,Material.BOW,"bows");
-    }
     public ItemStack getItemStack(String item) {
-        return getItemStack(item,Material.DIAMOND_HOE,"items");
+        String modelType = getModelType(item);
+        switch (modelType) {
+            case "items":
+                return getItemStack(item,Material.DIAMOND_HOE,"items");
+            case "bows":
+                return getItemStack(item,Material.BOW,"bows");
+            case "shields":
+                return getItemStack(item,Material.SHIELD,"shields");
+            case "weapons":
+                return getItemStack(item,Material.DIAMOND_SWORD,"weapons");
+        }
+        return null;
     }
     private ItemStack getItemStack(String item, Material material, String itemType) {
         if (!mapping.containsKey(itemType) || !mapping.get(itemType).containsKey(item)) {
@@ -669,7 +677,7 @@ public class ResourcePackAPI implements TabExecutor {
             sender.sendMessage(printCommand("/updateCustomItem [itemname] [setting] [value]","uci","Update [itemname]'s information. Use /getCustomItemInfo to do " +
                     "this interactively and to get a list of settings."));
             sender.sendMessage(printCommand("/getCustomItemInfo [itemname]","ici","Print information about [itemname]"));
-            sender.sendMessage(printCommand("/viewCustomItems [itemtype]","vci","Open an inventory to get a custom item"));
+            sender.sendMessage(printCommand("/viewCustomItems (itemtype)","vci","Open an inventory to get a custom item"));
             return true;
         }
         if (command.getLabel().equals("uploadcustomitems")) {
@@ -683,26 +691,12 @@ public class ResourcePackAPI implements TabExecutor {
             });
         }
         if (command.getLabel().equals("viewcustomitems")) {
-            String itemType = args[0];
-            new ResourcepackViewer(mapping.get(itemType.equals("blocks")?"items":itemType).inverse(),itemType).openFor((Player)sender);
+            String itemType = args.length==0?"blocks":args[0];
+            new ResourcepackViewer(getMapping(itemType.equals("blocks")?"items":itemType).inverse(),itemType).openFor((Player)sender);
             return true;
         }
         if (command.getLabel().equals("givecustomitem") && sender instanceof Player) {
-            String modelType = getModelType(args[0]);
-            switch (modelType) {
-                case "items":
-                    ((Player) sender).getInventory().addItem(getItemStack(args[0]));
-                    break;
-                case "bows":
-                    ((Player) sender).getInventory().addItem(getBow(args[0]));
-                    break;
-                case "shields":
-                    ((Player) sender).getInventory().addItem(getShield(args[0]));
-                    break;
-                case "weapons":
-                    ((Player) sender).getInventory().addItem(getWeapon(args[0]));
-                    break;
-            }
+            ((Player) sender).getInventory().addItem(getItemStack(args[0]));
         }
         if (command.getLabel().equals("getcustomiteminfo")) {
             if (sender instanceof Player)

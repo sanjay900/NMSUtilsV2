@@ -12,6 +12,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.Map;
@@ -26,11 +27,11 @@ public class ResourcepackViewer implements Listener {
         meta.setOwner("MHF_ArrowLeft");
         right.setItemMeta(meta);
     }
-    Inventory inv;
-    int page;
-    TreeMap<Short,String> mapping;
+    private Inventory inv;
+    private int page;
+    private TreeMap<Short,String> mapping;
     private ResourcePackAPI api = NMSUtils.getInstance().getResourcePackAPI();
-    String itemType;
+    private String itemType;
     public ResourcepackViewer(Map<Short,String> mapping, String itemType) {
         this.itemType = itemType;
         this.mapping = new TreeMap<>(mapping);
@@ -41,7 +42,7 @@ public class ResourcepackViewer implements Listener {
     private static final short PAGE_SIZE = 6*9;
     private static final short AMOUNT_PER_PAGE = 5*9;
     private short currentItem = 0;
-    private short lastItem = 0;
+    private short firstItemInInventory = 0;
     private void fillPage(int dir) {
         this.page += dir;
         if (dir != 0) {
@@ -49,40 +50,69 @@ public class ResourcepackViewer implements Listener {
         } else{
             dir = 1;
         }
-        if (dir < 0) currentItem = lastItem;
-        lastItem = currentItem;
-        short currentIdx = (short) (dir<0?AMOUNT_PER_PAGE-1:0);
-        while (currentIdx >= 0 && currentIdx < AMOUNT_PER_PAGE && currentItem <= mapping.lastKey() && currentItem >= 0) {
-            if (mapping.containsKey(currentItem)) {
-                if (itemType.equals("items") && mapping.get(currentItem).startsWith("block")) {
-                    currentItem+=dir;
-                    continue;
+        if (!mapping.isEmpty()) {
+            //If going in reverse start at the first item on the screen
+            if (dir < 0) currentItem = firstItemInInventory;
+            //If dir > 0 then the first item is the current before any loops are done
+            firstItemInInventory = currentItem;
+            short currentIdx = (short) (dir < 0 ? AMOUNT_PER_PAGE - 1 : 0);
+            while (currentIdx >= 0 && currentIdx < AMOUNT_PER_PAGE && currentItem <= mapping.lastKey() && currentItem >= 0) {
+                if (mapping.containsKey(currentItem)) {
+                    if (itemType.equals("items") && mapping.get(currentItem).startsWith("block")) {
+                        currentItem += dir;
+                        continue;
+                    }
+                    if (itemType.equals("blocks") && mapping.get(currentItem).startsWith("item")) {
+                        currentItem += dir;
+                        continue;
+                    }
+                    inv.setItem(currentIdx, api.getItemStack(mapping.get(currentItem)));
+                    currentIdx += dir;
                 }
-                if (itemType.equals("blocks") && mapping.get(currentItem).startsWith("item")) {
-                    currentItem+=dir;
-                    continue;
-                }
-                inv.setItem(currentIdx,api.getItemStack(mapping.get(currentItem)));
-                currentIdx+=dir;
+                currentItem += dir;
             }
-            currentItem+=dir;
+            if (dir < 0) {
+                //if dir < 0, then the first and current need to be swapped, as we counted backwards.
+                short realLast = firstItemInInventory;
+                firstItemInInventory = currentItem;
+                currentItem = realLast;
+            }
+            if (page != 0) {
+                ItemStack left = Utils.getCustomSkull(LEFT_VAL, LEFT_SIGN);
+                SkullMeta meta = (SkullMeta) left.getItemMeta();
+                meta.setDisplayName("Previous page");
+                left.setItemMeta(meta);
+                inv.setItem(AMOUNT_PER_PAGE, left);
+            }
         }
-        if (dir < 0) {
-            //if dir < 0, then the last item and current need to be swapped, as we counted backwards.
-            short realLast = lastItem;
-            lastItem = currentItem;
-            currentItem = realLast;
-        }
-        if (page != 0) {
-            ItemStack left = Utils.getCustomSkull(LEFT_VAL,LEFT_SIGN);
-            SkullMeta meta = (SkullMeta) left.getItemMeta();
-            meta.setDisplayName("Previous page");
-            left.setItemMeta(meta);
-            inv.setItem(AMOUNT_PER_PAGE, left);
-        }
-        if (currentItem <= mapping.lastKey()) {
+        ItemStack block = new ItemStack(Material.GRASS);
+        ItemMeta meta = block.getItemMeta();
+        meta.setDisplayName("View Custom Blocks");
+        block.setItemMeta(meta);
+        inv.setItem(AMOUNT_PER_PAGE+2, block);
+        ItemStack item = new ItemStack(Material.ITEM_FRAME);
+        meta = item.getItemMeta();
+        meta.setDisplayName("View Custom Items");
+        item.setItemMeta(meta);
+        inv.setItem(AMOUNT_PER_PAGE+3, item);
+        ItemStack weapon = new ItemStack(Material.DIAMOND_SWORD);
+        meta = weapon.getItemMeta();
+        meta.setDisplayName("View Custom Weapons");
+        weapon.setItemMeta(meta);
+        inv.setItem(AMOUNT_PER_PAGE+4, weapon);
+        ItemStack bow = new ItemStack(Material.BOW);
+        meta = bow.getItemMeta();
+        meta.setDisplayName("View Custom Bows");
+        bow.setItemMeta(meta);
+        inv.setItem(AMOUNT_PER_PAGE+5, bow);
+        ItemStack shield = new ItemStack(Material.SHIELD);
+        meta = shield.getItemMeta();
+        meta.setDisplayName("View Custom Shields");
+        shield.setItemMeta(meta);
+        inv.setItem(AMOUNT_PER_PAGE+6, shield);
+        if (!mapping.isEmpty() && currentItem <= mapping.lastKey()) {
             ItemStack right = Utils.getCustomSkull(RIGHT_VAL,RIGHT_SIGN);
-            SkullMeta meta = (SkullMeta) right.getItemMeta();
+            meta = right.getItemMeta();
             meta.setDisplayName("Next page");
             right.setItemMeta(meta);
             inv.setItem((AMOUNT_PER_PAGE) + 8, right);
@@ -107,10 +137,23 @@ public class ResourcepackViewer implements Listener {
                 openFor((Player) evt.getWhoClicked());
             }
         } else {
-            Bukkit.getServer().getScheduler().runTask(NMSUtils.getInstance(), () -> {
-                inv.setItem(evt.getSlot(),item);
-                ((Player)evt.getWhoClicked()).updateInventory();
-            });
+            ItemMeta meta = item.getItemMeta();
+            if (meta.getDisplayName().contains("View Custom Blocks")) {
+                new ResourcepackViewer(api.getMapping("items").inverse(), "blocks").openFor((Player) evt.getWhoClicked());
+            } else if (meta.getDisplayName().contains("View Custom Items")) {
+                new ResourcepackViewer(api.getMapping("items").inverse(), "items").openFor((Player) evt.getWhoClicked());
+            } else if (meta.getDisplayName().contains("View Custom Weapons")) {
+                new ResourcepackViewer(api.getMapping("weapons").inverse(), "weapons").openFor((Player) evt.getWhoClicked());
+            } else if (meta.getDisplayName().contains("View Custom Bows")) {
+                new ResourcepackViewer(api.getMapping("bows").inverse(), "bows").openFor((Player) evt.getWhoClicked());
+            } else if (meta.getDisplayName().contains("View Custom Shields")) {
+                new ResourcepackViewer(api.getMapping("shields").inverse(), "shields").openFor((Player) evt.getWhoClicked());
+            } else {
+                Bukkit.getServer().getScheduler().runTask(NMSUtils.getInstance(), () -> {
+                    inv.setItem(evt.getSlot(),item);
+                    ((Player)evt.getWhoClicked()).updateInventory();
+                });
+            }
         }
     }
 
