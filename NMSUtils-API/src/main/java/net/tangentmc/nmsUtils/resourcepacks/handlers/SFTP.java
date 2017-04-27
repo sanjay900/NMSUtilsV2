@@ -4,8 +4,10 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import lombok.Getter;
 import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.resourcepacks.ResourcePackHandler;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +21,8 @@ public class SFTP extends ResourcePackHandler {
     private String key;
     private String serverPath;
     private String url;
+    @Getter
+    private String hash;
     public SFTP(ConfigurationSection config) {
         super(config);
         config = config.getConfigurationSection("sftp");
@@ -29,10 +33,11 @@ public class SFTP extends ResourcePackHandler {
         serverPath = config.getString("server_path");
         key = config.getString("auth.key_file");
         isKeyBased = config.getBoolean("auth.keyBasedAuthentication");
+        hash = config.getString("uploaded_hash");
     }
 
     @Override
-    public void uploadZip(byte[] zip) throws Exception {
+    public void uploadZip(byte[] zip, String hash) throws Exception {
         Session s = null;
         ChannelSftp chan = null;
         try {
@@ -49,6 +54,9 @@ public class SFTP extends ResourcePackHandler {
                 s.disconnect();
             }
         }
+        this.hash = hash;
+        NMSUtils.getInstance().getConfig().set("sftp.uploaded_hash",this.hash);
+        NMSUtils.getInstance().saveConfig();
     }
 
     @Override

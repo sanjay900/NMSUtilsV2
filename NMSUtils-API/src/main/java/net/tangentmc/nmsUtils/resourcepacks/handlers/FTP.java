@@ -1,7 +1,9 @@
 package net.tangentmc.nmsUtils.resourcepacks.handlers;
 
 import lombok.Getter;
+import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.resourcepacks.ResourcePackHandler;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -15,6 +17,8 @@ public class FTP extends ResourcePackHandler {
     private String url;
     private String uploadPath;
     private String hostname;
+    @Getter
+    private String hash;
 
     public FTP(ConfigurationSection config) {
         super(config);
@@ -24,12 +28,16 @@ public class FTP extends ResourcePackHandler {
         this.url = config.getString("url");
         this.uploadPath = config.getString("server_path");
         this.hostname = config.getString("hostname");
+        this.hash = config.getString("uploaded_hash");
     }
 
     @Override
-    public void uploadZip(byte[] zip) throws IOException {
+    public void uploadZip(byte[] zip, String hash) throws IOException {
         FTPClient client = getFTPConnection();
             client.storeFile(uploadPath + zipName,new ByteArrayInputStream(zip));
+        this.hash = hash;
+        NMSUtils.getInstance().getConfig().set("ftp.uploaded_hash",this.hash);
+        NMSUtils.getInstance().saveConfig();
 
     }
 

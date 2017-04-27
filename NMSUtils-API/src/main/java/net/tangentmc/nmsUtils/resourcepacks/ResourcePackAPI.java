@@ -214,7 +214,7 @@ public class ResourcePackAPI implements TabExecutor {
     }
     public void updatePacks(Player pl) {
         try {
-            pl.setResourcePack(handlerList.get(0).getUrl(), DigestUtils.sha1(handlerList.get(0).getUrl()));
+            pl.setResourcePack(handlerList.get(0).getUrl(), handlerList.get(0).getHash().getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -373,7 +373,7 @@ public class ResourcePackAPI implements TabExecutor {
             zos.closeEntry();
             zos.close();
             for (ResourcePackHandler resourcePackHandler : handlerList) {
-                resourcePackHandler.uploadZip(baos.toByteArray());
+                resourcePackHandler.uploadZip(baos.toByteArray(),new String(DigestUtils.sha1(baos.toByteArray())));
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,6 +9,7 @@ public abstract class ResourcePackHandler {
     public ResourcePackHandler(ConfigurationSection config) {
         this.zipName = config.getString("pack_name");
     }
-    public abstract void uploadZip(byte[] zip) throws Exception;
+    public abstract void uploadZip(byte[] zip, String hash) throws Exception;
     public abstract String getUrl() throws IOException;
+    public abstract String getHash() throws IOException;
 }
