@@ -214,7 +214,7 @@ public class ResourcePackAPI implements TabExecutor {
     }
     public void updatePacks(Player pl) {
         try {
-            pl.setResourcePack(handlerList.get(0).getUrl(), handlerList.get(0).getHash().getBytes());
+            pl.setResourcePack(handlerList.get(0).getUrl());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -26,6 +26,7 @@ import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -50,6 +51,12 @@ public class EventListener implements Listener {
 			evt.setInstaBreak(util.getResourcePackAPI().getModelInfo(item).isBreakImmediately());
 		} catch (InvalidItemException ex) {}
 	}
+	@EventHandler
+	public void resourcePack(PlayerResourcePackStatusEvent evt) {
+		if (evt.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED) {
+			evt.getPlayer().sendMessage("You have rejected the server resource pack! A lot of features depend upon this pack, it is recommended that you enable it.");
+		}
+	}
 	@EventHandler(ignoreCancelled = true,priority= EventPriority.HIGH)
 	public void blockBreak(BlockBreakEvent evt) {
 		if (evt.getBlock().getType() == Material.MOB_SPAWNER && evt.getPlayer().getGameMode() != GameMode.CREATIVE) {
@@ -61,7 +68,6 @@ public class EventListener implements Listener {
 				evt.setCancelled(true);
 			} catch (InvalidItemException ex) {}
 		}
-		//TODO: blockdamage
 	}
 	@EventHandler
 	public void playerMove(PlayerMoveEvent event) {

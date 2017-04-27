@@ -33,7 +33,7 @@ public class Dropbox extends ResourcePackHandler {
     }
 
     @Override
-    public void uploadZip(byte[] zip, String hash) throws DbxException, IOException {
+    public void uploadZip(byte[] zip) throws DbxException, IOException {
         String fileName = serverPath+zipName;
         //If there was a problem deleting, then there probably was nothing to delete.
         try {
