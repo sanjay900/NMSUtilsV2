@@ -10,6 +10,7 @@ import net.tangentmc.nmsUtils.resourcepacks.handlers.FTP;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.Local;
 import net.tangentmc.nmsUtils.resourcepacks.handlers.SFTP;
 import net.tangentmc.nmsUtils.resourcepacks.predicates.*;
+import net.tangentmc.nmsUtils.utils.CommandBuilder;
 import net.tangentmc.nmsUtils.utils.MCException;
 import net.tangentmc.nmsUtils.utils.Utils;
 import org.apache.commons.codec.DecoderException;
@@ -17,6 +18,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -38,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
@@ -646,9 +649,30 @@ public class ResourcePackAPI implements TabExecutor {
         }
     }
 
+    public void registerCommands() {
+        new CommandBuilder("customItems").withCommandExecutor(this).withAliases("cit").build();
+        new CommandBuilder("giveCustomItem").withCommandExecutor(this).withTabExecutor(this).withAliases("gci").build();
+        new CommandBuilder("uploadCustomItems").withCommandExecutor(this).withTabExecutor(this).withAliases("upci").build();
+        new CommandBuilder("updateCustomItem").withCommandExecutor(this).withTabExecutor(this).withAliases("uci").build();
+        new CommandBuilder("getCustomItemInfo").withCommandExecutor(this).withTabExecutor(this).withAliases("ici").build();
+        new CommandBuilder("viewCustomItems").withCommandExecutor(this).withTabExecutor(this).withAliases("vci").build();
+    }
     @java.lang.Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (label.equals("uploadzip")) {
+        if (command.getLabel().equals("customitems")) {
+            sender.sendMessage(ChatColor.AQUA+""+ChatColor.BOLD+"CustomItems For NMSUtils - Help");
+            sender.sendMessage("");
+            sender.sendMessage(printCommand("/customItems","cit","Print this help screen"));
+            sender.sendMessage(printCommand("/uploadCustomItems","upci","Convert your pack to a zip file and upload to the location specified in your config." +
+                    "then, push that zip out to all online players."));
+            sender.sendMessage(printCommand("/giveCustomItem [itemname]","gci","Give yourself [itemname]"));
+            sender.sendMessage(printCommand("/updateCustomItem [itemname] [setting] [value]","uci","Update [itemname]'s information. Use /getCustomItemInfo to do " +
+                    "this interactively and to get a list of settings."));
+            sender.sendMessage(printCommand("/getCustomItemInfo [itemname]","ici","Print information about [itemname]"));
+            sender.sendMessage(printCommand("/viewCustomItems [itemtype]","vci","Open an inventory to get a custom item"));
+            return true;
+        }
+        if (command.getLabel().equals("uploadcustomitems")) {
             Bukkit.getScheduler().runTaskAsynchronously(NMSUtils.getInstance(),()->{
                 try {
                     uploadZIP();
@@ -658,7 +682,12 @@ public class ResourcePackAPI implements TabExecutor {
                 }
             });
         }
-        if (label.equals("getitem") && sender instanceof Player) {
+        if (command.getLabel().equals("viewcustomitems")) {
+            String itemType = args[0];
+            new ResourcepackViewer(mapping.get(itemType.equals("blocks")?"items":itemType).inverse(),itemType).openFor((Player)sender);
+            return true;
+        }
+        if (command.getLabel().equals("givecustomitem") && sender instanceof Player) {
             String modelType = getModelType(args[0]);
             switch (modelType) {
                 case "items":
@@ -675,28 +704,35 @@ public class ResourcePackAPI implements TabExecutor {
                     break;
             }
         }
-        if (label.equals("iteminfo")) {
+        if (command.getLabel().equals("getcustomiteminfo")) {
             if (sender instanceof Player)
                 ((Player) sender).spigot().sendMessage(getModelInfo(args[0]).getComponent());
             else {
                 sender.sendMessage(getModelInfo(args[0])+"");
             }
         }
-        if (label.equals("updatemodel")) {
+        if (command.getLabel().equals("updatecustomitem")) {
             String[] args2 = new String[args.length-1];
             System.arraycopy(args,1,args2,0,args2.length);
             getModelInfo(args[0]).updateViaCommand(args2, sender);
         }
-        return false;
+        return true;
+    }
+
+    private String printCommand(String command, String alias, String help) {
+        return ChatColor.YELLOW+command+ChatColor.RESET+" - "+ChatColor.DARK_GRAY+alias+ChatColor.RESET+" - "+help;
     }
 
     @java.lang.Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (command.getLabel().equals("uploadzip")) return null;
+        if (command.getLabel().equals("uploadcustomitems")) return null;
+        if (command.getLabel().equals("viewcustomitems")) {
+            return Stream.of("items","blocks","weapons","bows","shields").filter(s -> s.startsWith(args[0])).collect(Collectors.toList());
+        }
         if (args.length < 2) {
             return findAutoCompletions(args.length==0?"":args[0]);
         }
-        if (args.length == 2 && command.getLabel().equals("updatemodel")) {
+        if (args.length == 2 && command.getLabel().equals("updatecustomitem")) {
             return ModelInfo.getCommands().stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
         }
         return null;

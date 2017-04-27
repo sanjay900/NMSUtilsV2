@@ -80,7 +80,7 @@ public class ModelInfo implements ConfigurationSerializable {
     }
 
     public void applyToMeta(ItemMeta meta) {
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',displayName));
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',displayName==null?name:displayName));
         if (lore != null) meta.setLore(lore.stream().map(s -> ChatColor.translateAlternateColorCodes('&',s)).collect(Collectors.toList()));
     }
     @java.lang.Override
@@ -119,7 +119,7 @@ public class ModelInfo implements ConfigurationSerializable {
         if (args2.length == 1) {
             switch (args2[0].toLowerCase()) {
                 case "displayname":
-                    askForString("Please enter a display name",str->this.displayName = ChatColor.RESET+str, (Conversable) sender);
+                    askForString("Please enter a display name",str->this.displayName = "&r"+str, (Conversable) sender);
                     break;
                 case "lore":
                     List<String> newLore = new ArrayList<>();
@@ -219,20 +219,20 @@ public class ModelInfo implements ConfigurationSerializable {
                 .append("Name: ").color(YELLOW).append(name, FormatRetention.NONE).append("\n")
                 .append("Type: ").color(YELLOW).append(modelType, FormatRetention.NONE).append("\n")
                 .append("ID: ", FormatRetention.NONE).color(YELLOW).append(modelId+"", FormatRetention.NONE).append("\n");
-        makeLabel(cb,"Display Name: ","/updatemodel "+ name +" displayName")
+        makeLabel(cb,"Display Name: ","/updateCustomItem "+ name +" displayName")
                 .append(displayName, FormatRetention.NONE).append("\n");
-        makeLabel(cb,"Break Immediately: ","/updatemodel "+ name +" breakImmediately")
+        makeLabel(cb,"Break Immediately: ","/updateCustomItem "+ name +" breakImmediately")
                 .append(breakImmediately?"True":"False", FormatRetention.NONE).color(breakImmediately?GREEN:RED).append("\n");
-        makeLabel(cb,"Lore: ","/updatemodel "+ name +" lore")
+        makeLabel(cb,"Lore: ","/updateCustomItem "+ name +" lore")
                 .append(lore==null?"No lore set":"\n"+String.join("\n",lore), FormatRetention.NONE).append("\n");
-        makeLabel(cb,"Crafting recipe: ","/updatemodel "+ name +" recipe");
-        makeLabel(cb,"Click to View","/modelinfo "+ name +" recipe").color(ChatColor.WHITE).bold(true).append("\n");
-        makeLabel(cb,"Block collision: ","/updatemodel "+ name +" blockCollision")
+        makeLabel(cb,"Crafting recipe: ","/updateCustomItem "+ name +" recipe");
+        makeLabel(cb,"Click to View","/getCustomItemInfo "+ name +" recipe").color(ChatColor.WHITE).bold(true).append("\n");
+        makeLabel(cb,"Block collision: ","/updateCustomItem "+ name +" blockCollision")
                 .append(collisions?"True":"False", FormatRetention.NONE).color(collisions?GREEN:RED).append("\n")
                 .append("Rotation Information: ", FormatRetention.NONE).color(YELLOW).append("\n");
-        makeLabel(cb,"   Can Rotate: ","/updatemodel "+ name +" canRotate")
+        makeLabel(cb,"   Can Rotate: ","/updateCustomItem "+ name +" canRotate")
                 .append(rotatable?"True":"False", FormatRetention.NONE).color(rotatable?GREEN:RED).append("\n");
-        makeLabel(cb,"   Lock rotations to 90 degrees: ","/updatemodel "+ name +" lock90")
+        makeLabel(cb,"   Lock rotations to 90 degrees: ","/updateCustomItem "+ name +" lock90")
                 .append(!rotateAnyAngle?"True":"False", FormatRetention.NONE).color(!rotateAnyAngle?GREEN:RED)
                 .create();
         return cb.create();

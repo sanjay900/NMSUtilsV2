@@ -46,10 +46,7 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
         listener= new EventListener();
         resourcePackAPI = new ResourcePackAPI();
 		new CommandBuilder("spawnlaser").withCommandExecutor(this).build();
-		new CommandBuilder("getItem").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
-		new CommandBuilder("uploadZip").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
-		new CommandBuilder("updateModel").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
-		new CommandBuilder("iteminfo").withCommandExecutor(resourcePackAPI).withTabExecutor(resourcePackAPI).build();
+		resourcePackAPI.registerCommands();
 
 	}
 	@Override

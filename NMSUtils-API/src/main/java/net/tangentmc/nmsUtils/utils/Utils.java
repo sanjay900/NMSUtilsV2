@@ -1,9 +1,13 @@
 package net.tangentmc.nmsUtils.utils;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.UUID;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import net.tangentmc.nmsUtils.NMSUtil;
 import net.tangentmc.nmsUtils.NMSUtils;
 import org.bukkit.Bukkit;
@@ -262,5 +266,26 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	public static ItemStack getCustomSkull(String textures, String signature) {
+		GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+		PropertyMap propertyMap = profile.getProperties();
+		if (propertyMap == null) {
+			throw new IllegalStateException("Profile doesn't contain a property map");
+		}
+		propertyMap.put("textures", new Property("textures", textures, signature));
+		ItemStack head = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+		ItemMeta headMeta = head.getItemMeta();
+		Class<?> headMetaClass = headMeta.getClass();
+		try {
+			Field f = headMetaClass.getDeclaredField("profile");
+			f.setAccessible(true);
+			f.set(headMeta,profile);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+
+		head.setItemMeta(headMeta);
+		return head;
 	}
 }
