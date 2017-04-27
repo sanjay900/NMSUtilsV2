@@ -91,7 +91,7 @@ public class ResourcepackViewer implements Listener {
     @EventHandler
     private void inventoryClick(InventoryClickEvent evt) {
         if (!evt.getClickedInventory().equals(inv)) {
-            if (evt.getView().getTopInventory() == inv && evt.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY){
+            if (evt.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && evt.getView().getTopInventory().equals(inv)){
                 evt.setCancelled(true);
             }
             return;
