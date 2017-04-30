@@ -16,12 +16,28 @@ public interface NMSEntity {
      * Set an entity to respond to collisions.
      * @param b
      */
-    void setCollides(boolean b);
-    void setWillSave(boolean b);
+    default void setCollides(boolean b) {
+        if (b) addEntityTag(NMSEntity.COLLIDE_TAG);
+        else removeEntityTag(NMSEntity.COLLIDE_TAG);
+    }
     void setHasBoundingBox(boolean b);
-    boolean willSave();
     Entity getEntity();
-    boolean willCollide();
+
+
+    default void setWillSave(boolean b) {
+        if (b) addEntityTag(NMSEntity.WONT_SAVE_TAG);
+        else removeEntityTag(NMSEntity.WONT_SAVE_TAG);
+    }
+
+
+    default boolean willSave() {
+        return !hasEntityTag(NMSEntity.WONT_SAVE_TAG);
+    }
+
+
+    default boolean willCollide() {
+        return hasEntityTag(NMSEntity.COLLIDE_TAG);
+    }
 
     /**
      *
@@ -38,6 +54,9 @@ public interface NMSEntity {
      * @param text the string to add
      */
     void addEntityTag(String text);
+
+    void removeEntityTag(String text);
+
     boolean hasEntityTag(String text);
     List<String> getTags();
     static NMSEntity wrap(Entity en) {

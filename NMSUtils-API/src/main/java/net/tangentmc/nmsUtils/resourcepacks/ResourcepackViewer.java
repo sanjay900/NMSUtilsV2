@@ -4,6 +4,7 @@ import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -98,6 +100,7 @@ public class ResourcepackViewer implements Listener {
         ItemStack weapon = new ItemStack(Material.DIAMOND_SWORD);
         meta = weapon.getItemMeta();
         meta.setDisplayName("View Custom Weapons");
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         weapon.setItemMeta(meta);
         inv.setItem(AMOUNT_PER_PAGE+4, weapon);
         ItemStack bow = new ItemStack(Material.BOW);
@@ -149,10 +152,16 @@ public class ResourcepackViewer implements Listener {
             } else if (meta.getDisplayName().contains("View Custom Shields")) {
                 new ResourcepackViewer(api.getMapping("shields").inverse(), "shields").openFor((Player) evt.getWhoClicked());
             } else {
-                Bukkit.getServer().getScheduler().runTask(NMSUtils.getInstance(), () -> {
-                    inv.setItem(evt.getSlot(),item);
-                    ((Player)evt.getWhoClicked()).updateInventory();
-                });
+                if (evt.getWhoClicked().getGameMode() == GameMode.CREATIVE) {
+                    Bukkit.getServer().getScheduler().runTask(NMSUtils.getInstance(), () -> {
+                        inv.setItem(evt.getSlot(), item);
+                        ((Player) evt.getWhoClicked()).updateInventory();
+                    });
+                } else {
+                    evt.setCancelled(true);
+                    evt.getWhoClicked().closeInventory();
+                    api.getModelInfo(api.getItemStack(item)).showRecipeTo((Player)evt.getWhoClicked());
+                }
             }
         }
     }

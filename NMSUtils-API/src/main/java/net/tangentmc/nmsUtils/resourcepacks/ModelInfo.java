@@ -10,6 +10,7 @@ import net.tangentmc.nmsUtils.NMSUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.conversations.*;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.*;
@@ -242,5 +243,9 @@ public class ModelInfo implements ConfigurationSerializable {
         this.name = itemName;
         this.modelType = modelType;
         this.modelId = modelId;
+    }
+
+    public void showRecipeTo(Player player) {
+        //TODO: show shit
     }
 }

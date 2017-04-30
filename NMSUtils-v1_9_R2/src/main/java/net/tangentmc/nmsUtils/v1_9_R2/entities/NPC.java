@@ -98,6 +98,11 @@ public class NPC extends EntityPlayer {
         }
 
         @Override
+        public void removeEntityTag(String text) {
+
+        }
+
+        @Override
         public boolean hasEntityTag(String text) {
             return false;
         }

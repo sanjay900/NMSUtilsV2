@@ -10,10 +10,7 @@ import org.bukkit.event.HandlerList;
 @AllArgsConstructor
 public class EntityDespawnEvent extends Event {
 	private static final HandlerList handlers = new HandlerList();
-	private Entity entity;	
-	public static HandlerList getHandlerList() {      
-		return handlers;  
-	}
+	private Entity entity;
 	@Override
 	public HandlerList getHandlers() {
 		return handlers; 

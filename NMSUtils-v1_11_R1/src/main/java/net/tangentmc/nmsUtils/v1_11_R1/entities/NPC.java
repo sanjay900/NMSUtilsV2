@@ -93,7 +93,17 @@ public class NPC extends EntityPlayer {
         }
 
         @Override
+        public void setSize(double x, double y, double z) {
+
+        }
+
+        @Override
         public void addEntityTag(String text) {
+
+        }
+
+        @Override
+        public void removeEntityTag(String text) {
 
         }
 

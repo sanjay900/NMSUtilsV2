@@ -1,6 +1,7 @@
 package net.tangentmc.nmsUtils.v1_10_R1;
 
 import net.minecraft.server.v1_10_R1.*;
+import net.tangentmc.nmsUtils.NMSUtils;
 import net.tangentmc.nmsUtils.events.EntityDespawnEvent;
 import net.tangentmc.nmsUtils.events.EntitySpawnEvent;
 import org.bukkit.Bukkit;
@@ -25,6 +26,7 @@ class WorldManager implements IWorldAccess {
             if (added instanceof EntityPlayer && !this.players.add((EntityPlayer) added)) {
                 return;
             }
+            NMSUtils.getInstance().getMetadataManager().entityAdd(added.getBukkitEntity());
             Bukkit.getPluginManager().callEvent(new EntitySpawnEvent(added.getBukkitEntity()));
         }
     }

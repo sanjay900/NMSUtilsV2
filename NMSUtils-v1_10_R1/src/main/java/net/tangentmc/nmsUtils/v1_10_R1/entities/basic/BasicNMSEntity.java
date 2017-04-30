@@ -53,9 +53,21 @@ public class BasicNMSEntity implements NMSEntity {
         NBTTagList list = tag.getList("Tags", stag.getTypeId());
         list.add(stag);
         tag.set("Tags",list);
-        ((EntityArmorStand) ((CraftEntity) en).getHandle()).a(tag);
+        ((CraftEntity) en).getHandle().f(tag);
     }
 
+    @Override
+    public void removeEntityTag(String text) {
+        NBTTagCompound tag = NMSUtilImpl.getTag(((CraftEntity) en).getHandle());
+        NBTTagList list = tag.getList("Tags", new NBTTagString(text).getTypeId());
+        int remove = -1;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.getString(i).equals(text)) remove = i;
+        }
+        if (remove != -1) list.remove(remove);
+        tag.set("Tags",list);
+        ((CraftEntity) en).getHandle().f(tag);
+    }
     @Override
     public boolean hasEntityTag(String text) {
         NBTTagCompound tag = NMSUtilImpl.getTag(((CraftEntity) en).getHandle());

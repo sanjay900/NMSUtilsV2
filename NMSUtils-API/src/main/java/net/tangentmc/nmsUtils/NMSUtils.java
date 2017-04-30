@@ -9,6 +9,7 @@ import net.tangentmc.nmsUtils.entities.NMSHologram;
 import net.tangentmc.nmsUtils.events.EventListener;
 import net.tangentmc.nmsUtils.resourcepacks.ResourcePackAPI;
 import net.tangentmc.nmsUtils.utils.CommandBuilder;
+import net.tangentmc.nmsUtils.utils.MetadataManager;
 import net.tangentmc.nmsUtils.utils.ReflectionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -34,6 +35,8 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	private EventListener listener;
 	@Getter
 	private ResourcePackAPI resourcePackAPI;
+	@Getter
+    private MetadataManager metadataManager = new MetadataManager();
 	@Override
 	public void onEnable() {
 		instance = this;

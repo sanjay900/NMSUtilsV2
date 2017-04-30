@@ -47,7 +47,7 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void blockDamage(BlockDamageEvent evt) {
 		try {
-			String item = util.getResourcePackAPI().getFromStack(NMSUtils.getInstance().getUtil().getStackFromSpawner(evt.getBlock()));
+			String item = util.getResourcePackAPI().getItemStack(NMSUtils.getInstance().getUtil().getStackFromSpawner(evt.getBlock()));
 			evt.setInstaBreak(util.getResourcePackAPI().getModelInfo(item).isBreakImmediately());
 		} catch (InvalidItemException ex) {}
 	}
@@ -62,7 +62,7 @@ public class EventListener implements Listener {
 		if (evt.getBlock().getType() == Material.MOB_SPAWNER && evt.getPlayer().getGameMode() != GameMode.CREATIVE) {
 			try {
 				ItemStack stack = NMSUtils.getInstance().getUtil().getStackFromSpawner(evt.getBlock());
-				String item = util.getResourcePackAPI().getFromStack(stack);
+				String item = util.getResourcePackAPI().getItemStack(stack);
 				evt.getBlock().setType(Material.AIR);
 				evt.getBlock().getWorld().dropItemNaturally(evt.getBlock().getLocation(),stack);
 				evt.setCancelled(true);
@@ -126,10 +126,11 @@ public class EventListener implements Listener {
 	public void blockPlace(PlayerInteractEvent event) {
 		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 		//Always check main hand, as that is the hand you place blocks from.
-		String name = NMSUtils.getInstance().getResourcePackAPI().findItemFromStack(event.getPlayer().getInventory().getItemInMainHand());
+		String name = NMSUtils.getInstance().getResourcePackAPI().getItemStack(event.getPlayer().getInventory().getItemInMainHand());
 		if (name != null && name.startsWith("block")) {
 			event.setCancelled(true);
 			NMSUtils.getInstance().getResourcePackAPI().setBlock(event.getClickedBlock().getRelative(event.getBlockFace()).getLocation(),name);
 		}
 	}
+
 }

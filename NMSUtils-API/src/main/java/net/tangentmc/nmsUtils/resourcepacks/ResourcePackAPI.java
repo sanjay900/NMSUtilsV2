@@ -33,6 +33,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -291,6 +292,7 @@ public class ResourcePackAPI implements TabExecutor {
         meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
         meta.addItemFlags(ItemFlag.HIDE_DESTROYS);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
         ModelInfo info = getModelInfo(item);
         info.applyToMeta(meta);
         it.setItemMeta(meta);
@@ -315,23 +317,32 @@ public class ResourcePackAPI implements TabExecutor {
         TypeId type = getModelType(id);
         return mapping.get(type.getType()).inverse().get(type.getId());
     }
-    public String getFromStack(ItemStack is) {
-        if (is.getType() == Material.DIAMOND_HOE) {
-            return mapping.get("items").inverse().get(is.getDurability());
+    public String getItemStack(ItemStack item) {
+        if (item == null) return null;
+        String itemType = getTypeFromMaterial(item.getType());
+        if (itemType == null) return null;
+        if (!item.hasItemMeta()) return null;
+        if (!item.getItemMeta().spigot().isUnbreakable()) return null;
+        short durability = item.getDurability();
+        if (item.getType() == Material.DIAMOND_PICKAXE) {
+            durability += Material.DIAMOND_HOE.getMaxDurability();
         }
-        if (is.getType() == Material.DIAMOND_PICKAXE) {
-            return mapping.get("items").inverse().get(is.getDurability()+Material.DIAMOND_HOE.getMaxDurability());
+        if (!mapping.get(itemType).containsValue(durability)) return null;
+        return mapping.get(itemType).inverse().get(durability);
+    }
+    private String getTypeFromMaterial(Material m) {
+        switch (m) {
+            case DIAMOND_HOE:
+            case DIAMOND_PICKAXE:
+                return "items";
+            case BOW:
+                return "bows";
+            case SHIELD:
+                return "shields";
+            case DIAMOND_SWORD:
+                return "weapons";
+            default: return null;
         }
-        if (is.getType() == Material.BOW) {
-            return mapping.get("bows").inverse().get(is.getDurability());
-        }
-        if (is.getType() == Material.SHIELD) {
-            return mapping.get("shields").inverse().get(is.getDurability());
-        }
-        if (is.getType() == Material.DIAMOND_SWORD) {
-            return mapping.get("weapons").inverse().get(is.getDurability());
-        }
-        throw new InvalidItemException("Unknown material: "+is.getType());
     }
     private short getModelId(String item) {
         String type = getModelType(item);
@@ -524,6 +535,7 @@ public class ResourcePackAPI implements TabExecutor {
     }
     //We need to deal with mapping + the diamond hoe here.
     private void processBlock(JSONObject json, String name, OutputStream os) throws IOException {
+        if (json == null) return;
         //Apply model for placing inside mob spawner
         if (!json.has("display")) {
             json.put("display", blockDisplay1);
@@ -547,6 +559,7 @@ public class ResourcePackAPI implements TabExecutor {
 
 
     private void processItem(JSONObject json, String name, String itemType, OutputStream os) throws IOException {
+        if (json == null) return;
         IOUtils.write(json.toString(),os);
         //Dont add the seperate _blocking as its own thing
         if (shouldSkip(itemType,name)) return;
@@ -563,6 +576,10 @@ public class ResourcePackAPI implements TabExecutor {
         } catch (IOException ex) {
             System.out.println("Error reading file: "+p);
             throw ex;
+        } catch (JSONException ex) {
+            System.out.println("That was an error with the json file: "+p);
+            System.out.println(ex.getLocalizedMessage());
+            return null;
         }
     }
     private boolean filterFiles(Path path) {
@@ -629,33 +646,6 @@ public class ResourcePackAPI implements TabExecutor {
         });
     }
 
-    public String findItemFromStack(ItemStack item) {
-        if (item == null) return null;
-        String itemType = getTypeFromMaterial(item.getType());
-        if (itemType == null) return null;
-        if (!item.hasItemMeta()) return null;
-        if (!item.getItemMeta().spigot().isUnbreakable()) return null;
-        short durability = item.getDurability();
-        if (item.getType() == Material.DIAMOND_PICKAXE) {
-            durability += Material.DIAMOND_HOE.getMaxDurability();
-        }
-        if (!mapping.get(itemType).containsValue(durability)) return null;
-        return mapping.get(itemType).inverse().get(durability);
-    }
-    private String getTypeFromMaterial(Material m) {
-        switch (m) {
-            case DIAMOND_HOE:
-            case DIAMOND_PICKAXE:
-                return "items";
-            case BOW:
-                return "bows";
-            case SHIELD:
-                return "shields";
-            case DIAMOND_SWORD:
-                return "weapons";
-            default: return null;
-        }
-    }
 
     public void registerCommands() {
         new CommandBuilder("customItems").withCommandExecutor(this).withAliases("cit").build();
@@ -667,50 +657,55 @@ public class ResourcePackAPI implements TabExecutor {
     }
     @java.lang.Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (command.getLabel().equals("customitems")) {
-            sender.sendMessage(ChatColor.AQUA+""+ChatColor.BOLD+"CustomItems For NMSUtils - Help");
-            sender.sendMessage("");
-            sender.sendMessage(printCommand("/customItems","cit","Print this help screen"));
-            sender.sendMessage(printCommand("/uploadCustomItems","upci","Convert your pack to a zip file and upload to the location specified in your config." +
-                    "then, push that zip out to all online players."));
-            sender.sendMessage(printCommand("/giveCustomItem [itemname]","gci","Give yourself [itemname]"));
-            sender.sendMessage(printCommand("/updateCustomItem [itemname] [setting] [value]","uci","Update [itemname]'s information. Use /getCustomItemInfo to do " +
-                    "this interactively and to get a list of settings."));
-            sender.sendMessage(printCommand("/getCustomItemInfo [itemname]","ici","Print information about [itemname]"));
-            sender.sendMessage(printCommand("/viewCustomItems (itemtype)","vci","Open an inventory to get a custom item"));
-            return true;
-        }
-        if (command.getLabel().equals("uploadcustomitems")) {
-            Bukkit.getScheduler().runTaskAsynchronously(NMSUtils.getInstance(),()->{
-                try {
-                    uploadZIP();
-                    updatePacks();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-        if (command.getLabel().equals("viewcustomitems")) {
-            String itemType = args.length==0?"blocks":args[0];
-            new ResourcepackViewer(getMapping(itemType.equals("blocks")?"items":itemType).inverse(),itemType).openFor((Player)sender);
-            return true;
-        }
-        if (command.getLabel().equals("givecustomitem") && sender instanceof Player) {
-            ((Player) sender).getInventory().addItem(getItemStack(args[0]));
-        }
-        if (command.getLabel().equals("getcustomiteminfo")) {
-            if (sender instanceof Player)
-                ((Player) sender).spigot().sendMessage(getModelInfo(args[0]).getComponent());
-            else {
-                sender.sendMessage(getModelInfo(args[0])+"");
+        try {
+            if (command.getLabel().equals("customitems")) {
+                sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "CustomItems For NMSUtils - Help");
+                sender.sendMessage("");
+                sender.sendMessage(printCommand("/customItems", "cit", "Print this help screen"));
+                sender.sendMessage(printCommand("/uploadCustomItems", "upci", "Convert your pack to a zip file and upload to the location specified in your config." +
+                        "then, push that zip out to all online players."));
+                sender.sendMessage(printCommand("/giveCustomItem [itemname]", "gci", "Give yourself [itemname]"));
+                sender.sendMessage(printCommand("/updateCustomItem [itemname] [setting] [value]", "uci", "Update [itemname]'s information. Use /getCustomItemInfo to do " +
+                        "this interactively and to get a list of settings."));
+                sender.sendMessage(printCommand("/getCustomItemInfo [itemname]", "ici", "Print information about [itemname]"));
+                sender.sendMessage(printCommand("/viewCustomItems (itemtype)", "vci", "Open an inventory to get a custom item"));
+                return true;
             }
+            if (command.getLabel().equals("uploadcustomitems")) {
+                Bukkit.getScheduler().runTaskAsynchronously(NMSUtils.getInstance(), () -> {
+                    try {
+                        uploadZIP();
+                        updatePacks();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+            if (command.getLabel().equals("viewcustomitems")) {
+                String itemType = args.length == 0 ? "blocks" : args[0];
+                new ResourcepackViewer(getMapping(itemType.equals("blocks") ? "items" : itemType).inverse(), itemType).openFor((Player) sender);
+                return true;
+            }
+            if (command.getLabel().equals("givecustomitem") && sender instanceof Player) {
+                ((Player) sender).getInventory().addItem(getItemStack(args[0]));
+            }
+            if (command.getLabel().equals("getcustomiteminfo")) {
+                if (sender instanceof Player)
+                    ((Player) sender).spigot().sendMessage(getModelInfo(args[0]).getComponent());
+                else {
+                    sender.sendMessage(getModelInfo(args[0]) + "");
+                }
+            }
+            if (command.getLabel().equals("updatecustomitem")) {
+                String[] args2 = new String[args.length - 1];
+                System.arraycopy(args, 1, args2, 0, args2.length);
+                getModelInfo(args[0]).updateViaCommand(args2, sender);
+            }
+            return true;
+        } catch (Exception ex) {
+            sender.sendMessage("There was an error parsing that command. Please make sure you have entered all the arguments!");
+            return true;
         }
-        if (command.getLabel().equals("updatecustomitem")) {
-            String[] args2 = new String[args.length-1];
-            System.arraycopy(args,1,args2,0,args2.length);
-            getModelInfo(args[0]).updateViaCommand(args2, sender);
-        }
-        return true;
     }
 
     private String printCommand(String command, String alias, String help) {
