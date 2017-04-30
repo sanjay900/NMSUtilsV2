@@ -36,7 +36,7 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
 	@Getter
 	private ResourcePackAPI resourcePackAPI;
 	@Getter
-    private MetadataManager metadataManager = new MetadataManager();
+    private MetadataManager metadataManager;
 	@Override
 	public void onEnable() {
 		instance = this;
@@ -50,6 +50,7 @@ public class NMSUtils extends JavaPlugin implements CommandExecutor, Listener{
         resourcePackAPI = new ResourcePackAPI();
 		new CommandBuilder("spawnlaser").withCommandExecutor(this).build();
 		resourcePackAPI.registerCommands();
+		metadataManager = new MetadataManager();
 
 	}
 	@Override

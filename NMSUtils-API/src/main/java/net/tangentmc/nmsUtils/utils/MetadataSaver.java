@@ -15,9 +15,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.metadata.FixedMetadataValue;
 
 /**
- * An class that's capable of saving itself inside the metadata of an entity
+ * An class that's capable of saving itself inside the metadata of an entity,
+ * And then recreating itself on world load from the entity.
  * Any class implementing this entity needs to have the annotation {@link Metadata}
- * And requires a constructor with a single Entity argument.
+ * and unless NMSEntity.willSave is false, it requires a constructor with a single Entity argument.
  * @author sanjay
  *
  */
