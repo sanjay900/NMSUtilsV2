@@ -216,7 +216,7 @@ public class NMSUtilImpl implements NMSUtil, Listener, Runnable {
         nbttagcompound.setInt("y", blockposition.getY());
         nbttagcompound.setInt("z", blockposition.getZ());
         if (!nbttagcompound.equals(nbttagcompound1)) {
-            tileentity.a(nbttagcompound);
+            tileentity.load(nbttagcompound);
             tileentity.update();
             getWorld(b.getWorld()).notify(blockposition, iblockdata, iblockdata, 3);
         }

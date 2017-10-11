@@ -257,7 +257,7 @@ public class CraftHologramEntity extends CraftEntity {
             return false;
         }
         @Override
-        public NBTTagCompound e(NBTTagCompound nbttagcompound) {
+        public NBTTagCompound save(NBTTagCompound nbttagcompound) {
             return nbttagcompound;
         }
         @Override
@@ -405,7 +405,7 @@ public class CraftHologramEntity extends CraftEntity {
             }
 
             @Override
-            public NBTTagCompound e(NBTTagCompound nbttagcompound) {
+            public NBTTagCompound save(NBTTagCompound nbttagcompound) {
                 return nbttagcompound;
             }
 
@@ -553,7 +553,7 @@ public class CraftHologramEntity extends CraftEntity {
                     return false;
                 }
                 @Override
-                public NBTTagCompound e(NBTTagCompound nbttagcompound) {
+                public NBTTagCompound save(NBTTagCompound nbttagcompound) {
                     return nbttagcompound;
                 }
             }
@@ -641,7 +641,7 @@ public class CraftHologramEntity extends CraftEntity {
                     return false;
                 }
                 @Override
-                public NBTTagCompound e(NBTTagCompound nbttagcompound) {
+                public NBTTagCompound save(NBTTagCompound nbttagcompound) {
                     return nbttagcompound;
                 }
             }
@@ -726,7 +726,7 @@ public class CraftHologramEntity extends CraftEntity {
                 return false;
             }
             @Override
-            public NBTTagCompound e(NBTTagCompound nbttagcompound) {
+            public NBTTagCompound save(NBTTagCompound nbttagcompound) {
                 return nbttagcompound;
             }
 

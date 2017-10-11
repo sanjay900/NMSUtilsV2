@@ -1,6 +1,6 @@
 description = ''
 dependencies {
-    compileOnly(group: 'org.spigotmc', name: 'spigot', version: '1.11.2-R0.1-SNAPSHOT')
+    compileOnly(group: 'org.spigotmc', name: 'spigot', version: '1.12.2-R0.1-SNAPSHOT')
     compile 'com.dropbox.core:dropbox-core-sdk:3.0.1'
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
     compile group: 'net.jodah', name: 'expiringmap', version:'0.5.1'

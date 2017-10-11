@@ -1,14 +1,4 @@
 rootProject.name = 'NMSUtils'
 include ':NMSUtils-API'
-include ':NMSUtils-v1_9_R1'
-include ':NMSUtils-v1_9_R2'
 include ':NMSUtils-plugin'
-include ':NMSUtils-v1_10_R1'
-include ':NMSUtils-v1_11_R1'
-
-project(':NMSUtils-API').projectDir = "$rootDir/NMSUtils-API" as File
-project(':NMSUtils-v1_9_R1').projectDir = "$rootDir/NMSUtils-v1_9_R1" as File
-project(':NMSUtils-v1_9_R2').projectDir = "$rootDir/NMSUtils-v1_9_R2" as File
-project(':NMSUtils-plugin').projectDir = "$rootDir/NMSUtils-plugin" as File
-project(':NMSUtils-v1_10_R1').projectDir = "$rootDir/NMSUtils-v1_10_R1" as File
-project(':NMSUtils-v1_11_R1').projectDir = "$rootDir/NMSUtils-v1_11_R1" as File
+include ':NMSUtils-v1_12_R1'
